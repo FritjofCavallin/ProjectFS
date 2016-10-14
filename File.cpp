@@ -38,6 +38,11 @@ std::string File::getFileInfo() const
 		std::to_string(_blocks.size() * 512) + "\n";
 }
 
+std::string File::getName() const
+{
+	return _name;
+}
+
 const std::string & File::getData() const
 {
 	std::string data = "";

@@ -81,11 +81,50 @@ std::string FileSystem::saveToFile(Directory & directory, std::ofstream & saveFi
 			output = "File " + std::to_string(i) + " in " + directory.getName() + " is non-existant\n";
 		else
 		{
-			saveFile << file->getFileInfo().substr(0, 15) << "\n" << file->getData() << "\n";
+			saveFile << file->getName() << "\n" << file->getData() << "\n";
 		}
 
 	}
 	output = "Save successful\n";
+	return output;
+}
+
+std::string FileSystem::restoreImage(const std::string & path)
+{
+	std::string output;
+	std::ifstream loadFile;
+	loadFile.open(path);
+	if (loadFile.is_open)
+	{
+		output = loadFromFile(_root, loadFile);
+	}
+	else
+	{
+		output = "Invalid path name\n";
+	}
+
+	return output;
+}
+
+std::string FileSystem::loadFromFile(Directory & directory, std::ifstream & loadFile)
+{
+	std::string output, name;
+	int children[2] = { 0,0 };
+	loadFile >> name;
+	loadFile >> children[0];
+	loadFile >> children[1];
+	for (int i = 0; i < children[0]; i++)
+	{
+		loadFile >> name;
+		directory.addDirectory(name);
+		loadFromFile(*directory.getDirectory(i), loadFile);
+	}
+	for (int i = 0; i < children[1]; i++)
+	{
+		loadFile >> name;
+		directory.addFile(name, );
+	}
+
 	return output;
 }
 
