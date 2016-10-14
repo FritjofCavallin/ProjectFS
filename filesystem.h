@@ -14,6 +14,7 @@ private:
 	Directory*				_currentDir;
 	std::list<int>			_freeBlocks;
 
+	std::string extractNameFromPath(std::string & path);
 	Directory* startPathProcessing(const std::string & path);
 
 public:
@@ -24,10 +25,13 @@ public:
 	std::string saveToFile(Directory & directory, std::ofstream & saveFile);
 	std::string restoreImage(const std::string & path);
 	std::string loadFromFile(Directory & directory, std::ifstream & loadFile);
+	std::string createFile(const std::string & path, const std::string & data);
+	std::string getFileData(const std::string & path);
 	std::string ls(const std::string & path);
-	std::string writeToFile(const std::string & path, const std::string & data);
+	std::string writeToFile(Directory* dir, const std::string & name, const std::string & data);
 	std::string makeDir(const std::string & path);
-	std::string goToFolder(const std::string & path);
+	std::string goToFolder(const std::string & path, std::string & fullPath);
+	std::string getFullPath();
 
     /* These commands needs to implemented
      *

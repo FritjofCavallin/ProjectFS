@@ -17,7 +17,14 @@ Directory::Directory(const std::string & name, Directory * parent)
 //Destructor
 Directory::~Directory()
 {
-	//Nothing
+	for (unsigned int i = 0; i < _directories.size(); i++)
+	{
+		delete _directories[i];
+	}
+	for (unsigned int i = 0; i < _files.size(); i++)
+	{
+		delete _files[i];
+	}
 }
 
 //Get directory name
@@ -63,6 +70,14 @@ std::string Directory::getInfoString() const
 	return output + "\n";
 }
 
+std::string Directory::getPath() const
+{
+	if (_parent == nullptr)
+		return _name;
+	else
+		return _parent->getPath() + "/" + _name;
+}
+
 Directory * Directory::getDirectory(const unsigned int & index)
 {
 	if (index > _directories.size() - 1)
@@ -77,6 +92,23 @@ File* Directory::getFile(const unsigned int & index)
 		return nullptr;
 	else
 		return _files[index];
+}
+
+bool Directory::getFileData(const std::string & name, std::string & data) const
+{
+	int index = -1;
+	for (unsigned int i = 0; i < _files.size() && index == -1; i++)
+	{
+		if (name == _files[i]->getName())
+			index = i;
+	}
+	if (index != -1)
+	{
+		data = _files[index]->getData();
+		return true;
+	}
+	else
+		return false;
 }
 
 void Directory::getChildren(int* children)

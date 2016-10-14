@@ -1,5 +1,7 @@
 #include <iostream>
 #include <sstream>
+#include <crtdbg.h>
+
 #include "filesystem.h"
 
 const int MAXCOMMANDS = 8;
@@ -15,11 +17,14 @@ int parseCommandString(const std::string &userCommand, std::string strArr[]);
 int findCommand(std::string &command);
 std::string help();
 
-int main(void) {
+int main(void)
+{
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
 	FileSystem fileSystem;
 	std::string userCommand, commandArr[MAXCOMMANDS];
 	std::string user = "user@DV1492";    // Change this if you want another user to be displayed
-	std::string currentDir = "/";    // current directory, used for output
+	std::string currentDir = "/root/";    // current directory, used for output
 
     bool bRun = true;
 
@@ -44,8 +49,15 @@ int main(void) {
 				std::cout << fileSystem.ls(commandArr[1]);
                 break;
             case 3: // create
-                break;
+			{
+				std::cout << "Enter file content below:\n";
+				std::string data = "";
+				getline(std::cin, data);
+				std::cout << fileSystem.createFile(commandArr[1], data);
+				break;
+			}
             case 4: // cat
+				std::cout << fileSystem.getFileData(commandArr[1]);
                 break;
             case 5: // createImage
 				std::cout << fileSystem.createImage(commandArr[1]);
@@ -64,9 +76,10 @@ int main(void) {
 				std::cout << fileSystem.makeDir(commandArr[1]);
                 break;
             case 12: // cd
-				std::cout << fileSystem.goToFolder(commandArr[1]);
+				std::cout << fileSystem.goToFolder(commandArr[1], currentDir);
                 break;
             case 13: // pwd
+				std::cout << fileSystem.getFullPath() + "\n";
                 break;
             case 14: // help
                 std::cout << help() << std::endl;
@@ -76,7 +89,7 @@ int main(void) {
             }
 			for (unsigned int i = 0; i < nrOfCommands; i++)
 			{
-				commandArr[i] == "";
+				commandArr[i] = "";
 			}
         }
     } while (bRun == true);
@@ -110,9 +123,9 @@ std::string help() {
     std::string helpStr;
     helpStr += "OSD Disk Tool .oO Help Screen Oo.\n";
     helpStr += "-----------------------------------------------------------------------------------\n" ;
-    helpStr += "* quit:                             Quit OSD Disk Tool\n";
-    helpStr += "* format;                           Formats disk\n";
-    helpStr += "* ls     <path>:                    Lists contents of <path>.\n";
+    helpStr += "* quit:                             Quit OSD Disk Tool\n";  //Done
+    helpStr += "* format;                           Formats disk\n";  //Started...
+    helpStr += "* ls     <path>:                    Lists contents of <path>.\n";  //Done
     helpStr += "* create <path>:                    Creates a file and stores contents in <path>\n";
     helpStr += "* cat    <path>:                    Dumps contents of <file>.\n";
     helpStr += "* createImage  <real-file>:         Saves disk to <real-file>\n";
@@ -121,9 +134,9 @@ std::string help() {
     helpStr += "* cp     <source> <destination>:    Copy <source> to <destination>\n";
     helpStr += "* append <source> <destination>:    Appends contents of <source> to <destination>\n";
     helpStr += "* mv     <old-file> <new-file>:     Renames <old-file> to <new-file>\n";
-    helpStr += "* mkdir  <directory>:               Creates a new directory called <directory>\n";
-    helpStr += "* cd     <directory>:               Changes current working directory to <directory>\n";
-    helpStr += "* pwd:                              Get current working directory\n";
-    helpStr += "* help:                             Prints this help screen\n";
+    helpStr += "* mkdir  <directory>:               Creates a new directory called <directory>\n";  //Done
+    helpStr += "* cd     <directory>:               Changes current working directory to <directory>\n";  //Done
+    helpStr += "* pwd:                              Get current working directory\n";  //Done
+    helpStr += "* help:                             Prints this help screen\n";  //Done
     return helpStr;
 }
