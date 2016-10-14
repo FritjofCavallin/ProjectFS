@@ -13,30 +13,6 @@ FileSystem::~FileSystem()
 	//Nothing
 }
 
-Directory * FileSystem::startPathProcessing(const std::string & path)
-{
-	if (path.substr(0, 3) == "../")
-	{
-		std::string p = path.substr(3);
-		Directory* dir = nullptr;
-		while (p.substr(0, 3) == "../")
-		{
-			dir = _currentDir->getParent();
-			p = p.substr(3);
-			if (dir == nullptr)
-				break;
-		}
-		if (dir != nullptr)
-			return dir->processPath(p);
-		else
-			return nullptr;
-	}
-	else if (path.substr(0, 2) == "./")
-		return _currentDir->processPath(path.substr(2));
-	else
-		return _root.processPath(path);
-}
-
 //Resets the whole system
 void FileSystem::format()
 {
@@ -44,16 +20,35 @@ void FileSystem::format()
 	_root = Directory("root", nullptr);
 	_currentDir = &_root;
 
+	_freeBlocks.clear();
 	for (unsigned int i = 0; i < 250; i++)
 	{
 		_freeBlocks.push_back(i);
 	}
 }
 
-//Lists all directories and files in the current directory
-std::string FileSystem::ls() const
+//Basically preprocessing for processing paths
+Directory * FileSystem::startPathProcessing(const std::string & path)
 {
-	return _currentDir->getInfoString();
+	std::string p = path;
+	//Remove '/' at the end of path for consistency
+	if (p.length() > 3 && p[p.length() - 1] == '/')
+		p = p.substr(0, p.length() - 2);
+
+	if (p[0] == '.')  //Relative path
+		return _currentDir->processPath(p);
+	else  //Absolute path
+		return _root.processPath(p);
+}
+
+//Lists all directories and files in the current directory
+std::string FileSystem::ls(const std::string & path)
+{
+	Directory* dir = startPathProcessing(path);
+	if (dir != nullptr)
+		return dir->getInfoString();
+	else
+		return "Invalid path.\n";
 }
 
 //Write data to file
@@ -62,7 +57,7 @@ std::string FileSystem::writeToFile(const std::string & path, const std::string 
 	if ((data.length() + 511) / 512 < _freeBlocks.size())  //Check if there is enough space
 	{
 		std::vector<Block*> blocks;
-		int i = 0;
+		unsigned int i = 0;
 		//Using "full" blocks
 		while (i + 512 < data.length())
 		{
@@ -110,11 +105,6 @@ std::string FileSystem::makeDir(const std::string & path)
 //Sets new working directory
 std::string FileSystem::goToFolder(const std::string & path)
 {
-	if (path == ".." && _currentDir != &_root)
-	{
-		_currentDir = _currentDir->getParent();
-		return "";
-	}
 	Directory* dir = startPathProcessing(path);
 	if (dir != nullptr)
 	{

@@ -20,7 +20,7 @@ public:
     FileSystem();
     ~FileSystem();
 	void format();
-	std::string ls() const;
+	std::string ls(const std::string & path);
 	std::string writeToFile(const std::string & path, const std::string & data);
 	std::string makeDir(const std::string & path);
 	std::string goToFolder(const std::string & path);

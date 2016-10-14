@@ -7,8 +7,8 @@
 class Directory
 {
 private:
-	std::vector<Directory>		_directories;
-	std::vector<File>			_files;
+	std::vector<Directory*>		_directories;
+	std::vector<File*>			_files;
 	std::string					_name;
 	Directory*					_parent;
 

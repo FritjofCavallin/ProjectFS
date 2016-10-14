@@ -28,8 +28,8 @@ int main(void) {
         getline(std::cin, userCommand);
 
         int nrOfCommands = parseCommandString(userCommand, commandArr);
-        if (nrOfCommands > 0) {
-
+        if (nrOfCommands > 0)
+		{
             int cIndex = findCommand(commandArr[0]);
             switch(cIndex) {
 
@@ -41,8 +41,7 @@ int main(void) {
                 // Call fileSystem.format()
                 break;
             case 2: // ls
-                //std::cout << "Listing directory" << std::endl;
-				std::cout << fileSystem.ls();
+				std::cout << fileSystem.ls(commandArr[1]);
                 break;
             case 3: // create
                 break;
@@ -74,6 +73,10 @@ int main(void) {
             default:
                 std::cout << "Unknown command: " << commandArr[0] << std::endl;
             }
+			for (unsigned int i = 0; i < nrOfCommands; i++)
+			{
+				commandArr[i] == "";
+			}
         }
     } while (bRun == true);
 
