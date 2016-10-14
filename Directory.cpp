@@ -21,7 +21,7 @@ Directory::~Directory()
 }
 
 //Get directory name
-std::string Directory::getName() const
+std::string Directory::getName()
 {
 	return _name;
 }
@@ -61,6 +61,28 @@ std::string Directory::getInfoString() const
 		output.append(_files[i]->getFileInfo());
 	}
 	return output + "\n";
+}
+
+Directory * Directory::getDirectory(const unsigned int & index)
+{
+	if (index > _directories.size() - 1)
+		return nullptr;
+	else
+		return _directories[index];
+}
+
+File* Directory::getFile(const unsigned int & index)
+{
+	if (index > _files.size() - 1)
+		return nullptr;
+	else
+		return _files[index];
+}
+
+void Directory::getChildren(int* children)
+{
+	children[0] = _directories.size();
+	children[1] = _files.size();
 }
 
 //Processes the path-string given

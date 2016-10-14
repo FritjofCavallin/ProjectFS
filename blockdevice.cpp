@@ -23,4 +23,3 @@ BlockDevice::BlockDevice(const BlockDevice &other) {
 BlockDevice::~BlockDevice() {
     delete [] this->memBlocks;
 }
-

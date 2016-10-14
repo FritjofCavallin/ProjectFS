@@ -48,6 +48,7 @@ int main(void) {
             case 4: // cat
                 break;
             case 5: // createImage
+				std::cout << fileSystem.createImage(commandArr[1]);
                 break;
             case 6: // restoreImage
                 break;
