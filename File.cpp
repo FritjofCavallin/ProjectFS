@@ -8,10 +8,12 @@ File::File()
 }
 
 //Constructor
-File::File(const std::string & fileName, int realSize, const std::vector<Block*> & blocks)
+File::File(const std::string & fileName, int realSize, const std::vector<Block*> & blocks
+	, const std::vector<int> & usedIndexes)
 {
 	_name = fileName;
 	_realSize = realSize;
+	_usedIndexes = usedIndexes;
 	for (unsigned int i = 0; i < blocks.size(); i++)
 	{
 		_blocks.push_back(blocks[i]);
@@ -44,6 +46,7 @@ std::string File::getFileInfo() const
 		std::to_string(_blocks.size() * 512) + "\n";
 }
 
+//Returns all actual data the file contains
 std::string File::getData() const
 {
 	std::string data = "";
@@ -53,4 +56,9 @@ std::string File::getData() const
 		data += _blocks[i]->toString();
 	}
 	return data.substr(0, _realSize);
+}
+
+std::vector<int> File::getUsedIndexes() const
+{
+	return _usedIndexes;
 }

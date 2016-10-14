@@ -162,12 +162,14 @@ std::string FileSystem::writeToFile(Directory* dir, const std::string & name, co
 	if ((data.length() + 511) / 512 < _freeBlocks.size())  //Check if there is enough space
 	{
 		std::vector<Block*> blocks;
+		std::vector<int> usedIndexes;
 		unsigned int i = 0;
 		//Using "full" blocks
 		while (i + 512 < data.length())
 		{
 			_memBlockDevice.writeBlock(_freeBlocks.front(), data.substr(i, 512));
 			blocks.push_back(&_memBlockDevice[_freeBlocks.front()]);
+			usedIndexes.push_back(_freeBlocks.front());
 			_freeBlocks.pop_front();
 			i += 512;
 		}
@@ -178,8 +180,9 @@ std::string FileSystem::writeToFile(Directory* dir, const std::string & name, co
 		last.replace(0, left, data.substr(i, left));
 		_memBlockDevice.writeBlock(_freeBlocks.front(), last);
 		blocks.push_back(&_memBlockDevice[_freeBlocks.front()]);
+		usedIndexes.push_back(_freeBlocks.front());
 		_freeBlocks.pop_front();
-		dir->addFile(name, i + left, blocks);
+		dir->addFile(name, i + left, blocks, usedIndexes);
 		return "";
 	}
 	else
@@ -218,4 +221,25 @@ std::string FileSystem::goToFolder(const std::string & path, std::string & fullP
 std::string FileSystem::getFullPath()
 {
 	return "/" + _currentDir->getPath() + "/";
+}
+
+//Removes a file from the system
+std::string FileSystem::removeFile(const std::string & path)
+{
+	std::string p = path;
+	std::string name = extractNameFromPath(p);
+	Directory* dir = startPathProcessing(p);
+	if (dir != nullptr)
+	{
+		std::vector<int> usedIndexes;
+		if (dir->removeFile(name, usedIndexes))
+		{
+			_freeBlocks.insert(std::end(_freeBlocks), std::begin(usedIndexes), std::end(usedIndexes));
+			return "";
+		}
+		else
+			return "Invalid name.\n";
+	}
+	else
+		return "Invalid path.\n";
 }

@@ -30,6 +30,7 @@ public:
 	std::string makeDir(const std::string & path);
 	std::string goToFolder(const std::string & path, std::string & fullPath);
 	std::string getFullPath();
+	std::string removeFile(const std::string & path);
 
     /* These commands needs to implemented
      *

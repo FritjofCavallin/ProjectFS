@@ -170,8 +170,29 @@ std::string Directory::addDirectory(const std::string & name)
 }
 
 //Add a child file
-std::string Directory::addFile(const std::string & name, int size, const std::vector<Block*>& blocks)
+std::string Directory::addFile(const std::string & name, int size, const std::vector<Block*>& blocks
+	, const std::vector<int> & usedIndexes)
 {
-	_files.push_back(new File(name, size, blocks));
+	_files.push_back(new File(name, size, blocks, usedIndexes));
 	return "";
+}
+
+
+bool Directory::removeFile(const std::string & name, std::vector<int>& usedIndexes)
+{
+	int index = -1;
+	for (unsigned int i = 0; i < _files.size() && index == -1; i++)
+	{
+		if (name == _files[i]->getName())
+			index = i;
+	}
+	if (index != -1)
+	{
+		usedIndexes = _files[index]->getUsedIndexes();
+		delete _files[index];
+		_files.erase(_files.begin() + index);
+		return true;
+	}
+	else
+		return false;
 }
