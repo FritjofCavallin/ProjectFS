@@ -49,8 +49,15 @@ int main(void)
 				std::cout << fileSystem.ls(commandArr[1]);
                 break;
             case 3: // create
-                break;
+			{
+				std::cout << "Enter file content below:\n";
+				std::string data = "";
+				getline(std::cin, data);
+				std::cout << fileSystem.createFile(commandArr[1], data);
+				break;
+			}
             case 4: // cat
+				std::cout << fileSystem.getFileData(commandArr[1]);
                 break;
             case 5: // createImage
 				std::cout << fileSystem.createImage(commandArr[1]);

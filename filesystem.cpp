@@ -27,6 +27,24 @@ void FileSystem::format()
 	}
 }
 
+//Extracts and returns the last part of a path, aka the name, and removes it from the referenced path
+std::string FileSystem::extractNameFromPath(std::string & path)
+{
+	int lastSlash = path.find_last_of("/");
+	std::string name = "";
+	if (lastSlash == -1)  //Found no '/'
+	{
+		name = path;
+		path = "";
+	}
+	else
+	{
+		name = path.substr(lastSlash + 1);
+		path = path.substr(0, lastSlash + 1);
+	}
+	return name;
+}
+
 //Basically preprocessing for processing paths
 Directory * FileSystem::startPathProcessing(const std::string & path)
 {
@@ -89,6 +107,38 @@ std::string FileSystem::saveToFile(Directory & directory, std::ofstream & saveFi
 	return output;
 }
 
+//Create a new file
+std::string FileSystem::createFile(const std::string & path, const std::string & data)
+{
+	std::string p = path;
+	std::string name = extractNameFromPath(p);
+	Directory* dir = startPathProcessing(p);
+	if (dir != nullptr)
+	{
+		writeToFile(dir, name, data);
+		return "";
+	}
+	else
+		return "Invalid path.\n";
+}
+
+std::string FileSystem::getFileData(const std::string & path)
+{
+	std::string p = path;
+	std::string name = extractNameFromPath(p);
+	Directory* dir = startPathProcessing(p);
+	if (dir != nullptr)
+	{
+		std::string data = "";
+		if (dir->getFileData(name, data))
+			return "Data in file \"" + name + "\":\n" + data + "\n";
+		else
+			return "Invalid file name.\n";
+	}
+	else
+		return "Invalid path.\n";
+}
+
 //Lists all directories and files in the current directory
 std::string FileSystem::ls(const std::string & path)
 {
@@ -107,7 +157,7 @@ std::string FileSystem::ls(const std::string & path)
 }
 
 //Write data to file
-std::string FileSystem::writeToFile(const std::string & path, const std::string & data)
+std::string FileSystem::writeToFile(Directory* dir, const std::string & name, const std::string & data)
 {
 	if ((data.length() + 511) / 512 < _freeBlocks.size())  //Check if there is enough space
 	{
@@ -129,7 +179,7 @@ std::string FileSystem::writeToFile(const std::string & path, const std::string 
 		_memBlockDevice.writeBlock(_freeBlocks.front(), last);
 		blocks.push_back(&_memBlockDevice[_freeBlocks.front()]);
 		_freeBlocks.pop_front();
-		_currentDir->addFile("NAME", i + left, blocks);
+		dir->addFile(name, i + left, blocks);
 		return "";
 	}
 	else
@@ -141,16 +191,9 @@ std::string FileSystem::writeToFile(const std::string & path, const std::string 
 //Create a directory
 std::string FileSystem::makeDir(const std::string & path)
 {
-	int lastSlash = path.find_last_of("/");
-	std::string name = "";
-	if (lastSlash == -1)  //Found no '/'
-	{
-		name = path;
-		return _root.addDirectory(name);
-	}
-	else
-		name = path.substr(lastSlash + 1);
-	Directory* dir = startPathProcessing(path.substr(0, lastSlash + 1));
+	std::string p = path;
+	std::string name = extractNameFromPath(p);
+	Directory* dir = startPathProcessing(p);
 	if (dir != nullptr)
 		return dir->addDirectory(name);
 	else

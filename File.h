@@ -15,7 +15,8 @@ public:
 	File();
 	File(const std::string & fileName, int realSize, const std::vector<Block*> & blocks);
 	virtual ~File();
+	std::string getName() const;
 	std::string getFileInfo() const;
-	const std::string & getData() const;
+	std::string getData() const;
 };
 

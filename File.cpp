@@ -11,6 +11,7 @@ File::File()
 File::File(const std::string & fileName, int realSize, const std::vector<Block*> & blocks)
 {
 	_name = fileName;
+	_realSize = realSize;
 	for (unsigned int i = 0; i < blocks.size(); i++)
 	{
 		_blocks.push_back(blocks[i]);
@@ -21,6 +22,11 @@ File::File(const std::string & fileName, int realSize, const std::vector<Block*>
 File::~File()
 {
 	//Nothing
+}
+
+std::string File::getName() const
+{
+	return _name;
 }
 
 //Get info about the file
@@ -38,7 +44,7 @@ std::string File::getFileInfo() const
 		std::to_string(_blocks.size() * 512) + "\n";
 }
 
-const std::string & File::getData() const
+std::string File::getData() const
 {
 	std::string data = "";
 	data.reserve(_realSize);

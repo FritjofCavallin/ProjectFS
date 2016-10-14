@@ -94,6 +94,23 @@ File* Directory::getFile(const unsigned int & index)
 		return _files[index];
 }
 
+bool Directory::getFileData(const std::string & name, std::string & data) const
+{
+	int index = -1;
+	for (unsigned int i = 0; i < _files.size() && index == -1; i++)
+	{
+		if (name == _files[i]->getName())
+			index = i;
+	}
+	if (index != -1)
+	{
+		data = _files[index]->getData();
+		return true;
+	}
+	else
+		return false;
+}
+
 void Directory::getChildren(int* children)
 {
 	children[0] = _directories.size();

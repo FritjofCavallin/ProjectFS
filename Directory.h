@@ -24,6 +24,7 @@ public:
 	std::string getPath() const;
 	Directory* getDirectory(const unsigned int & index);
 	File* getFile(const unsigned int & index);
+	bool getFileData(const std::string & name, std::string & data) const;
 	void getChildren(int* children);
 	Directory* processPath(const std::string & path);
 	std::string addDirectory(const std::string & name);
