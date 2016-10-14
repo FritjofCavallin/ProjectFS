@@ -1,5 +1,7 @@
 #include <iostream>
 #include <sstream>
+#include <crtdbg.h>
+
 #include "filesystem.h"
 
 const int MAXCOMMANDS = 8;
@@ -15,7 +17,10 @@ int parseCommandString(const std::string &userCommand, std::string strArr[]);
 int findCommand(std::string &command);
 std::string help();
 
-int main(void) {
+int main(void)
+{
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
 	FileSystem fileSystem;
 	std::string userCommand, commandArr[MAXCOMMANDS];
 	std::string user = "user@DV1492";    // Change this if you want another user to be displayed

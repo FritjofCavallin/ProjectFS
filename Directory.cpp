@@ -17,7 +17,14 @@ Directory::Directory(const std::string & name, Directory * parent)
 //Destructor
 Directory::~Directory()
 {
-	//Nothing
+	for (unsigned int i = 0; i < _directories.size(); i++)
+	{
+		delete _directories[i];
+	}
+	for (unsigned int i = 0; i < _files.size(); i++)
+	{
+		delete _files[i];
+	}
 }
 
 //Get directory name
