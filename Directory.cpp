@@ -21,7 +21,7 @@ Directory::~Directory()
 }
 
 //Get directory name
-std::string Directory::getName() const
+std::string Directory::getName()
 {
 	return _name;
 }
@@ -54,13 +54,35 @@ std::string Directory::getInfoString() const
 	output += "  \tFiles: " + std::to_string(_files.size()) + "\n";
 	for (unsigned int i = 0; i < _directories.size(); i++)
 	{
-		output.append(_directories[i].toString());
+		output.append(_directories[i]->toString());
 	}
 	for (unsigned int i = 0; i < _files.size(); i++)
 	{
-		output.append(_files[i].getFileInfo());
+		output.append(_files[i]->getFileInfo());
 	}
 	return output;
+}
+
+Directory * Directory::getDirectory(const unsigned int & index)
+{
+	if (index > _directories.size() - 1)
+		return nullptr;
+	else
+		return _directories[index];
+}
+
+File* Directory::getFile(const unsigned int & index)
+{
+	if (index > _files.size() - 1)
+		return nullptr;
+	else
+		return _files[index];
+}
+
+void Directory::getChildren(int* children)
+{
+	children[0] = _directories.size();
+	children[1] = _files.size();
 }
 
 //Processes the path-string given
@@ -84,12 +106,12 @@ Directory * Directory::processPath(const std::string & path)
 		std::string testString = path.substr(0, end);
 		for (unsigned int i = 0; i < _directories.size(); i++)
 		{
-			if (testString == _directories[i].getName())
+			if (testString == _directories[i]->getName())
 			{
 				if (lastPart)
-					return &_directories[i];
+					return _directories[i];
 				else
-					return _directories[i].processPath(path.substr(end + 1));
+					return _directories[i]->processPath(path.substr(end + 1));
 			}
 		}
 		return nullptr;
@@ -106,12 +128,12 @@ std::string Directory::addDirectory(const std::string & name)
 	bool ok = true;
 	for (unsigned int i = 0; i < _directories.size() && ok; i++)
 	{
-		if (name == _directories[i].getName())
+		if (name == _directories[i]->getName())
 			ok = false;
 	}
 	if (ok)
 	{
-		_directories.push_back(Directory(name, this));
+		_directories.push_back(new Directory(name, this));
 		return "";
 	}
 	else
@@ -121,6 +143,6 @@ std::string Directory::addDirectory(const std::string & name)
 //Add a child file
 std::string Directory::addFile(const std::string & name, int size, const std::vector<Block*>& blocks)
 {
-	_files.push_back(File(name, size, blocks));
+	_files.push_back(new File(name, size, blocks));
 	return "";
 }

@@ -8,7 +8,7 @@
 class Block
 {
 private:
-    char *block;
+	char *block;
     int nrOfElements;
 
 public:

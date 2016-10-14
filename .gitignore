@@ -8,6 +8,7 @@
 *.sln.docstates
 *.sln
 *.vcxproj
+*.txt
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -303,3 +304,4 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+*.filters

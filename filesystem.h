@@ -20,6 +20,8 @@ public:
     FileSystem();
     ~FileSystem();
 	void format();
+	std::string createImage(const std::string & path);
+	std::string saveToFile(Directory & directory, std::ofstream & saveFile);
 	std::string ls() const;
 	std::string writeToFile(const std::string & path, const std::string & data);
 	std::string makeDir(const std::string & path);

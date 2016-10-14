@@ -50,6 +50,54 @@ void FileSystem::format()
 	}
 }
 
+std::string FileSystem::createImage(const std::string & path) //real path
+{
+	std::string output;
+	std::ofstream saveFile;
+	saveFile.open(path);
+	if (saveFile.is_open())
+	{
+		output = saveToFile(_root, saveFile);
+	}
+	else
+	{
+		output = "Invalid path name\n";
+	}
+	
+	return output;
+}
+
+std::string FileSystem::saveToFile(Directory & directory, std::ofstream & saveFile)
+{
+	std::string output;
+	int children[2] = { 0, 0 };
+	directory.getChildren(children);
+	saveFile << directory.getName() << "\n" << std::to_string(children[0]) << "\n" << std::to_string(children[1]) << "\n";
+	for (int i = 0; i < children[0]; i++)
+	{
+		Directory* dir = directory.getDirectory(i);
+		if (dir == nullptr)
+			output = "Directory " + std::to_string(i) + " in " + directory.getName() + " is non-existant\n";
+		else
+		{
+			saveToFile(*directory.getDirectory(i), saveFile);
+		}
+	}
+	for (int i = 0; i > children[1]; i++)
+	{
+		File* file = directory.getFile(i);
+		if (file == nullptr)
+			output = "File " + std::to_string(i) + " in " + directory.getName() + " is non-existant\n";
+		else
+		{
+			saveFile << file->getFileInfo().substr(0, 15) << "\n" << file->getData() << "\n";
+		}
+
+	}
+	output = "Save successful\n";
+	return output;
+}
+
 //Lists all directories and files in the current directory
 std::string FileSystem::ls() const
 {
