@@ -25,7 +25,8 @@ public:
 	std::string ls(const std::string & path);
 	std::string writeToFile(const std::string & path, const std::string & data);
 	std::string makeDir(const std::string & path);
-	std::string goToFolder(const std::string & path);
+	std::string goToFolder(const std::string & path, std::string & fullPath);
+	std::string getFullPath();
 
     /* These commands needs to implemented
      *

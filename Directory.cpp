@@ -70,6 +70,14 @@ std::string Directory::getInfoString() const
 	return output + "\n";
 }
 
+std::string Directory::getPath() const
+{
+	if (_parent == nullptr)
+		return _name;
+	else
+		return _parent->getPath() + "/" + _name;
+}
+
 Directory * Directory::getDirectory(const unsigned int & index)
 {
 	if (index > _directories.size() - 1)

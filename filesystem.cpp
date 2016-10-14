@@ -92,11 +92,18 @@ std::string FileSystem::saveToFile(Directory & directory, std::ofstream & saveFi
 //Lists all directories and files in the current directory
 std::string FileSystem::ls(const std::string & path)
 {
-	Directory* dir = startPathProcessing(path);
-	if (dir != nullptr)
-		return dir->getInfoString();
+	if (path != "")
+	{
+		Directory* dir = startPathProcessing(path);
+		if (dir != nullptr)
+			return dir->getInfoString();
+		else
+			return "Invalid path.\n";
+	}
 	else
-		return "Invalid path.\n";
+	{
+		return _currentDir->getInfoString();
+	}
 }
 
 //Write data to file
@@ -151,14 +158,21 @@ std::string FileSystem::makeDir(const std::string & path)
 }
 
 //Sets new working directory
-std::string FileSystem::goToFolder(const std::string & path)
+std::string FileSystem::goToFolder(const std::string & path, std::string & fullPath)
 {
 	Directory* dir = startPathProcessing(path);
 	if (dir != nullptr)
 	{
 		_currentDir = dir;
+		fullPath = getFullPath();
 		return "";
 	}
 	else
 		return "Invalid path.\n";
+}
+
+//Get the full file path from root to current working directory
+std::string FileSystem::getFullPath()
+{
+	return "/" + _currentDir->getPath() + "/";
 }

@@ -21,6 +21,7 @@ public:
 	Directory* getParent() const;
 	std::string toString() const;
 	std::string getInfoString() const;
+	std::string getPath() const;
 	Directory* getDirectory(const unsigned int & index);
 	File* getFile(const unsigned int & index);
 	void getChildren(int* children);
