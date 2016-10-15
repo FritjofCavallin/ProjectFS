@@ -331,11 +331,6 @@ std::string FileSystem::renameFile(const std::string & prevName, const std::stri
 	return _currentDir->renameFile(prevName, newName);
 }
 
-std::string FileSystem::removeFile(const std::string & name)
-{
-	return _currentDir->removeFile(name);
-}
-
 std::string FileSystem::copyFile(const std::string & name, const std::string & path)
 {
 	std::string output, data;
