@@ -175,3 +175,16 @@ std::string Directory::addFile(const std::string & name, int size, const std::ve
 	_files.push_back(new File(name, size, blocks));
 	return "";
 }
+
+std::string Directory::renameFile(const std::string & prevName, const std::string & newName)
+{
+	std::string output = "No such file.\n";
+	for (int i = 0; i < _files.size(); i++)
+		if (_files[i]->getName() == prevName)
+		{
+			_files[i]->setName(newName);
+			output = "Rename successful.\n";
+		}
+
+	return output;
+}

@@ -29,5 +29,6 @@ public:
 	Directory* processPath(const std::string & path);
 	std::string addDirectory(const std::string & name);
 	std::string addFile(const std::string & name, int size, const std::vector<Block*> & blocks);
+	std::string renameFile(const std::string & prevName, const std::string & newName);
 };
 

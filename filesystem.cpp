@@ -321,3 +321,9 @@ std::string FileSystem::getFullPath()
 {
 	return "/" + _currentDir->getPath() + "/";
 }
+
+std::string FileSystem::renameFile(std::string prevName, std::string newName)
+{
+	//note: current working directory
+	return _currentDir->renameFile(prevName, newName);
+}

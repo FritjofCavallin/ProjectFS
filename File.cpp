@@ -55,7 +55,12 @@ std::string File::getData() const
 	return data.substr(0, _realSize);
 }
 
-int File::getSize()
+int File::getSize() const
 {
 	return _realSize;
+}
+
+void File::setName(const std::string & name)
+{
+	_name = name;
 }

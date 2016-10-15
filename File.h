@@ -18,6 +18,7 @@ public:
 	std::string getName() const;
 	std::string getFileInfo() const;
 	std::string getData() const;
-	int getSize();
+	int getSize() const;
+	void setName(const std::string & name);
 };
 
