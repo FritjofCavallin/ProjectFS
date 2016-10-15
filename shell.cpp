@@ -43,7 +43,7 @@ int main(void)
                 std::cout << "Exiting\n";
                 break;
             case 1: // format
-                // Call fileSystem.format()
+				fileSystem.format();
                 break;
             case 2: // ls
 				std::cout << fileSystem.ls(commandArr[1]);
@@ -132,7 +132,7 @@ std::string help() {
     helpStr += "OSD Disk Tool .oO Help Screen Oo.\n";
     helpStr += "-----------------------------------------------------------------------------------\n" ;
     helpStr += "* quit:                             Quit OSD Disk Tool\n";  //Done
-    helpStr += "* format;                           Formats disk\n";  //Begun, but not currently working on...
+    helpStr += "* format;                           Formats disk\n";  //Done
     helpStr += "* ls     <path>:                    Lists contents of <path>.\n";  //Done
     helpStr += "* create <path>:                    Creates a file and stores contents in <path>\n";	//Done
     helpStr += "* cat    <path>:                    Dumps contents of <file>.\n";	//Done
@@ -145,7 +145,7 @@ std::string help() {
     helpStr += "* mkdir  <directory>:               Creates a new directory called <directory>\n";  //Done
     helpStr += "* cd     <directory>:               Changes current working directory to <directory>\n";  //Done
     helpStr += "* pwd:                              Get current working directory\n";  //Done
-	helpStr += "* chmod:							Change <access rights> for <file>\n";
+	helpStr += "* chmod:							Change <access rights> for <file>\n"; //Done
     helpStr += "* help:                             Prints this help screen\n";  //Done
     return helpStr;
 }

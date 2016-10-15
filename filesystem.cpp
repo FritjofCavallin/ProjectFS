@@ -4,7 +4,14 @@
 //Default constructor
 FileSystem::FileSystem()
 {
-	format();
+	_memBlockDevice = MemBlockDevice();
+	_root = new Directory("root", nullptr);
+	_currentDir = _root;
+
+	for (unsigned int i = 0; i < 250; i++)
+	{
+		_freeBlocks.push_back(i);
+	}
 }
 
 //Destructor
@@ -16,15 +23,17 @@ FileSystem::~FileSystem()
 //Resets the whole system
 void FileSystem::format()
 {
+	delete _root;
 	_memBlockDevice = MemBlockDevice();
-	_root = Directory("root", nullptr);
-	_currentDir = &_root;
+	_root = new Directory("root", nullptr);
+	_currentDir = _root;
 
 	_freeBlocks.clear();
 	for (unsigned int i = 0; i < 250; i++)
 	{
 		_freeBlocks.push_back(i);
 	}
+
 }
 
 //Extracts and returns the last part of a path, aka the name, and removes it from the referenced path
@@ -56,7 +65,7 @@ Directory * FileSystem::startPathProcessing(const std::string & path)
 	if (p[0] == '.')  //Relative path
 		return _currentDir->processPath(p);
 	else  //Absolute path
-		return _root.processPath(p);
+		return _root->processPath(p);
 }
 
 std::string FileSystem::createImage(const std::string & path) //real path
@@ -66,7 +75,7 @@ std::string FileSystem::createImage(const std::string & path) //real path
 	saveFile.open(path);
 	if (saveFile.is_open())
 	{
-		output = saveToFile(_root, saveFile);
+		output = saveToFile(*_root, saveFile);
 		saveFile.close();
 	}
 	else
@@ -120,7 +129,7 @@ std::string FileSystem::restoreImage(const std::string & path)
 		{
 			fscanf(loadFile, "%c", &read);
 		}
-		output = loadFromFile(_root, loadFile);
+		output = loadFromFile(*_root, loadFile);
 		fclose(loadFile);
 	}
 	else
