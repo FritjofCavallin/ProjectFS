@@ -11,7 +11,7 @@ class FileSystem
 {
 private:
     MemBlockDevice			_memBlockDevice;
-	Directory				_root;
+	Directory*				_root;
 	Directory*				_currentDir;
 	std::list<int>			_freeBlocks;
 
