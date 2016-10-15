@@ -100,7 +100,7 @@ std::string FileSystem::saveToFile(Directory & directory, std::ofstream & saveFi
 			output = "File " + std::to_string(i) + " in " + directory.getName() + " is non-existant.\n";
 		else
 		{
-			saveFile << file->getName() << "\n" << file->getSize() << "\n" << file->getData() << "\n";
+			saveFile << file->getName() << "\n" << file->getSize() << "\n" << file->getAccessRights() << "\n" << file->getData() << "\n";
 		}
 
 	}
@@ -133,10 +133,10 @@ std::string FileSystem::restoreImage(const std::string & path)
 
 std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 {
-	std::string name, data, children[2], size;
+	std::string name, data, children[2], size, accessRights;
 	char read;
 
-	//reads number of directory children, 0: directories, 1: files
+	//reads directory's number of children, 0: directories, 1: files
 	for (int i = 0; i < 2; i++)
 	{
 		while (1)
@@ -192,6 +192,16 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 			else
 				break;
 		}
+		while (1)
+		{
+			fscanf(loadFile, "%c", &read);
+			if (read != '\n')
+			{
+				accessRights += read;
+			}
+			else
+				break;
+		}
 
 		//reads and stores file data
 		for (int j = 0; j < std::stoi(size); j++)
@@ -200,7 +210,7 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 			data += read;
 		}
 		fscanf(loadFile, "%c", &read); //reads the line feed after the data
-		writeToFile(&directory, name, data);
+		writeToFile(&directory, name, data, std::stoi(accessRights));
 		name = "";
 	}
 
@@ -208,14 +218,14 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 }
 
 //Create a new file
-std::string FileSystem::createFile(const std::string & path, const std::string & data)
+std::string FileSystem::createFile(const std::string & path, const std::string & data, const std::string & accessRights)
 {
 	std::string p = path;
 	std::string name = extractNameFromPath(p);
 	Directory* dir = startPathProcessing(p);
 	if (dir != nullptr)
 	{
-		writeToFile(dir, name, data);
+		writeToFile(dir, name, data, std::stoi(accessRights));
 		return "Creation successful.\n";
 	}
 	else
@@ -229,9 +239,20 @@ std::string FileSystem::getFileData(const std::string & path)
 	Directory* dir = startPathProcessing(p);
 	if (dir != nullptr)
 	{
-		std::string data = "";
-		if (dir->getFileData(name, data))
-			return "Data in file \"" + name + "\":\n" + data + "\n";
+		File* file = dir->getFile(name);
+		if (file != nullptr)
+		{
+			if (file->getAccessRights() < 2)
+			{
+				std::string data = "";
+				if (dir->getFileData(name, data))
+					return "Data in file \"" + name + "\":\n" + data + "\n";
+				else
+					return "Invalid file name.\n";
+			}
+			else
+				return "Access violation reading file \'" + name + "\'.\n";
+		}
 		else
 			return "Invalid file name.\n";
 	}
@@ -257,7 +278,7 @@ std::string FileSystem::ls(const std::string & path)
 }
 
 //Write data to file
-std::string FileSystem::writeToFile(Directory* dir, const std::string & name, const std::string & data)
+std::string FileSystem::writeToFile(Directory* dir, const std::string & name, const std::string & data, const unsigned int accessRights)
 {
 	if ((data.length() + 511) / 512 < _freeBlocks.size())  //Check if there is enough space
 	{
@@ -282,7 +303,7 @@ std::string FileSystem::writeToFile(Directory* dir, const std::string & name, co
 		blocks.push_back(&_memBlockDevice[_freeBlocks.front()]);
 		usedIndexes.push_back(_freeBlocks.front());
 		_freeBlocks.pop_front();
-		dir->addFile(name, i + left, blocks, usedIndexes);
+		dir->addFile(name, accessRights, i + left, blocks, usedIndexes);
 		return "";
 	}
 	else
@@ -325,25 +346,32 @@ std::string FileSystem::getFullPath()
 
 std::string FileSystem::renameFile(const std::string & prevName, const std::string & newName)
 {
+	std::string output;
 	File* file = _currentDir->getFile(prevName);
-
-
-	return _currentDir->renameFile(prevName, newName);
+	if (file->getAccessRights() == 0 || file->getAccessRights() == 2)
+	{
+		output = _currentDir->renameFile(prevName, newName);
+	}
+	return output;
 }
 
 std::string FileSystem::copyFile(const std::string & name, const std::string & path)
 {
 	std::string output, data;
-	if (_currentDir->getFileData(name, data))
+	File* file;
+	std::string p = name;
+	std::string fileName = extractNameFromPath(p);
+	Directory* dir = startPathProcessing(p);
+	if ((file = dir->getFile(fileName)) != nullptr)
 	{
-		std::string p = path;
-		std::string newFileName = extractNameFromPath(p);
+		p = path;
+		fileName = extractNameFromPath(p);
 		if (p != "")
 		{
-			Directory* dir = startPathProcessing(p);
+			dir = startPathProcessing(p);
 			if (dir != nullptr)
 			{
-				writeToFile(dir, newFileName, data);
+				writeToFile(dir, fileName, data, file->getAccessRights());
 				output = "File copy successful.\n";
 			}
 			else
@@ -351,7 +379,7 @@ std::string FileSystem::copyFile(const std::string & name, const std::string & p
 		}
 		else
 		{
-			writeToFile(_currentDir, newFileName, data);
+			writeToFile(_currentDir, fileName, data, file->getAccessRights());
 			output = "File copy successful.\n";
 		}
 	}
@@ -364,25 +392,38 @@ std::string FileSystem::copyFile(const std::string & name, const std::string & p
 std::string FileSystem::appendFile(const std::string & name, const std::string & path)
 {
 	std::string output, data, data1, data2;
-	if (_currentDir->getFileData(name, data1))
+	File* file = _currentDir->getFile(name);
+	if (file != nullptr)
 	{
-		std::string p = path;
-		std::string appendFileName = extractNameFromPath(p);
-		Directory* dir = startPathProcessing(p);
-		if (dir != nullptr)
+		if (file->getAccessRights() < 2)
 		{
-			if (dir->getFileData(appendFileName, data2))
+			_currentDir->getFileData(name, data1);
+			std::string p = path;
+			std::string appendFileName = extractNameFromPath(p);
+			Directory* dir = startPathProcessing(p);
+			if (dir != nullptr)
 			{
-				dir->removeFile(appendFileName);
-				data = data1 + data2;
-				writeToFile(dir, appendFileName, data);
-				output = "File successfully appended.\n";
+				if ((file = dir->getFile(appendFileName)) != nullptr)
+				{
+					if (file->getAccessRights() == 0 || file->getAccessRights() == 2)
+					{
+						dir->getFileData(appendFileName, data2);
+						dir->removeFile(appendFileName);
+						data = data1 + data2;
+						writeToFile(dir, appendFileName, data, file->getAccessRights());
+						output = "File successfully appended.\n";
+					}
+					else
+						output = "Access violation writing in '" + appendFileName + "'.\n";
+				}
+				else
+					output = "Invalid file 2 name or path.\n";
 			}
 			else
-				output = "Invalid file 2 name or path.\n";
+				output = "Invalid path name.\n";
 		}
 		else
-			output = "Invalid path name.\n";
+			output = "Access violation reading '" + name + "'.\n";
 	}
 	else
 		output = "Invalid file 1 name.\n";
@@ -409,4 +450,25 @@ std::string FileSystem::removeFile(const std::string & path)
 	}
 	else
 		return "Invalid path.\n";
+}
+
+std::string FileSystem::accessRights(const std::string & accessRights, const std::string & path)
+{
+	std::string output, name, p;
+	p = path;
+	name = extractNameFromPath(p);
+	Directory* dir = startPathProcessing(p);
+	if (dir != nullptr)
+	{
+		File* file = dir->getFile(name);
+		if (file != nullptr)
+		{
+			file->setAccessRights(std::stoi(accessRights));
+		}
+		else
+			output = "Invalid file name.\n";
+	}
+	else
+		output = "Invalid path name.\n";
+	return output;
 }

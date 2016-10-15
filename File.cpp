@@ -8,11 +8,11 @@ File::File()
 }
 
 //Constructor
-File::File(const std::string & fileName, int realSize, const std::vector<Block*> & blocks
-	, const std::vector<int> & usedIndexes)
+File::File(const std::string & fileName, int accessRights, int realSize, const std::vector<Block*> & blocks, const std::vector<int> & usedIndexes)
 {
 	_name = fileName;
 	_realSize = realSize;
+	_accessRights = accessRights;
 	_usedIndexes = usedIndexes;
 	for (unsigned int i = 0; i < blocks.size(); i++)
 	{
@@ -58,6 +58,11 @@ std::string File::getData() const
 	return data.substr(0, _realSize);
 }
 
+int File::getAccessRights()
+{
+	return _accessRights;
+}
+
 int File::getSize() const
 {
 	return _realSize;
@@ -66,6 +71,11 @@ int File::getSize() const
 void File::setName(const std::string & name)
 {
 	_name = name;
+}
+
+void File::setAccessRights(const unsigned int & accessRights)
+{
+	_accessRights = accessRights;
 }
 
 std::vector<int> File::getUsedIndexes() const
