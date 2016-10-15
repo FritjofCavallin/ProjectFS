@@ -67,10 +67,11 @@ std::string FileSystem::createImage(const std::string & path) //real path
 	if (saveFile.is_open())
 	{
 		output = saveToFile(_root, saveFile);
+		saveFile.close();
 	}
 	else
 	{
-		output = "Invalid path name.\n";
+		output = "File active or invalid path name.\n";
 	}
 
 	return output;
@@ -120,6 +121,7 @@ std::string FileSystem::restoreImage(const std::string & path)
 			fscanf(loadFile, "%c", &read);
 		}
 		output = loadFromFile(_root, loadFile);
+		fclose(loadFile);
 	}
 	else
 	{
@@ -137,13 +139,12 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 	//reads number of directory children, 0: directories, 1: files
 	for (int i = 0; i < 2; i++)
 	{
-		read = 'a';
 		while (1)
 		{
 			fscanf(loadFile, "%c", &read);
 			if (read != '\n')
 			{
-				children[i].append(&read);
+				children[i]+= read;
 			}
 			else
 				break;
@@ -154,7 +155,6 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 	for (int i = 0; i < std::stoi(children[0]); i++) //std::stoi converts string to int
 	{
 		//reads and stores directory name
-		read = 'a';
 		while (1)
 		{
 			fscanf(loadFile, "%c", &read);
@@ -172,7 +172,6 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 	for (int i = 0; i < std::stoi(children[1]); i++) //std::stoi converts string to int
 	{
 		//reads and stores file name
-		read = 'a';
 		while (1)
 		{
 			fscanf(loadFile, "%c", &read);
@@ -183,7 +182,6 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 		}
 
 		//reads and stores file size
-		read = 'a';
 		while (1)
 		{
 			fscanf(loadFile, "%c", &read);
@@ -201,9 +199,9 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 			fscanf(loadFile, "%c", &read);
 			data += read;
 		}
+		fscanf(loadFile, "%c", &read); //reads the line feed after the data
 		writeToFile(&directory, name, data);
-		//fscanf(loadFile, "%c", read); //reads the line feed after the data
-		name = ""; //resets name string
+		name = "";
 	}
 
 	return "Load successful.\n";
@@ -330,4 +328,26 @@ std::string FileSystem::renameFile(const std::string & prevName, const std::stri
 std::string FileSystem::removeFile(const std::string & name)
 {
 	return _currentDir->removeFile(name);
+}
+
+std::string FileSystem::copyFile(const std::string & name, const std::string & path)
+{
+	std::string output, data;
+	if (_currentDir->getFileData(name, data))
+	{
+		std::string p = path;
+		std::string newFileName = extractNameFromPath(p);
+		Directory* dir = startPathProcessing(p);
+		if (dir != nullptr)
+		{
+			writeToFile(dir, newFileName, data);
+			output = "File copy successful.\n";
+		}
+		else
+			output = "Invalid path name.\n";
+	}
+	else
+		output = "Invalid file name.\n";
+
+	return output;
 }

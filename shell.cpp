@@ -69,6 +69,7 @@ int main(void)
 				std::cout << fileSystem.removeFile(commandArr[1]);
                 break;
             case 8: // cp
+				std::cout << fileSystem.copyFile(commandArr[1], commandArr[2]);
                 break;
             case 9: // append
                 break;
@@ -133,7 +134,7 @@ std::string help() {
     helpStr += "* cat    <path>:                    Dumps contents of <file>.\n";	//Done
     helpStr += "* createImage  <real-file>:         Saves disk to <real-file>\n";	//Done
     helpStr += "* restoreImage <real-file>:         Reads <real-file> onto disk\n";	//Done
-    helpStr += "* rm     <file>:                    Removes <file>\n";
+    helpStr += "* rm     <file>:                    Removes <file>\n";	//Done
     helpStr += "* cp     <source> <destination>:    Copy <source> to <destination>\n";
     helpStr += "* append <source> <destination>:    Appends contents of <source> to <destination>\n";
     helpStr += "* mv     <old-file> <new-file>:     Renames <old-file> to <new-file>\n";	//Done

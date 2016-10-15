@@ -178,7 +178,7 @@ std::string Directory::addFile(const std::string & name, int size, const std::ve
 
 std::string Directory::renameFile(const std::string & prevName, const std::string & newName)
 {
-	std::string output = "No such file.\n";
+	std::string output = "Invalid file name.\n";
 	for (int i = 0; i < _files.size(); i++)
 		if (_files[i]->getName() == prevName)
 		{
@@ -192,7 +192,7 @@ std::string Directory::renameFile(const std::string & prevName, const std::strin
 
 std::string Directory::removeFile(const std::string & name)
 {
-	std::string output = "No such file.\n";
+	std::string output = "Invalid file name.\n";
 	for (int i = 0; i < _files.size(); i++)
 		if (_files[i]->getName() == name)
 		{
