@@ -71,7 +71,7 @@ std::string FileSystem::createImage(const std::string & path) //real path
 	}
 	else
 	{
-		output = "File active or invalid path name.\n";
+		output = "Real file active or invalid path name.\n";
 	}
 
 	return output;
@@ -322,6 +322,9 @@ std::string FileSystem::getFullPath()
 
 std::string FileSystem::renameFile(const std::string & prevName, const std::string & newName)
 {
+	File* file = _currentDir->getFile(prevName);
+
+
 	return _currentDir->renameFile(prevName, newName);
 }
 
@@ -337,14 +340,22 @@ std::string FileSystem::copyFile(const std::string & name, const std::string & p
 	{
 		std::string p = path;
 		std::string newFileName = extractNameFromPath(p);
-		Directory* dir = startPathProcessing(p);
-		if (dir != nullptr)
+		if (p != "")
 		{
-			writeToFile(dir, newFileName, data);
-			output = "File copy successful.\n";
+			Directory* dir = startPathProcessing(p);
+			if (dir != nullptr)
+			{
+				writeToFile(dir, newFileName, data);
+				output = "File copy successful.\n";
+			}
+			else
+				output = "Invalid path name.\n";
 		}
 		else
-			output = "Invalid path name.\n";
+		{
+			writeToFile(_currentDir, newFileName, data);
+			output = "File copy successful.\n";
+		}
 	}
 	else
 		output = "Invalid file name.\n";

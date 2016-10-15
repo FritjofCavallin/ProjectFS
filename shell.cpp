@@ -137,7 +137,7 @@ std::string help() {
     helpStr += "* restoreImage <real-file>:         Reads <real-file> onto disk\n";	//Done
     helpStr += "* rm     <file>:                    Removes <file>\n";	//Done
     helpStr += "* cp     <source> <destination>:    Copy <source> to <destination>\n";	//Done
-    helpStr += "* append <source> <destination>:    Appends contents of <source> to <destination>\n";
+    helpStr += "* append <source> <destination>:    Appends contents of <source> to <destination>\n"; //Done
     helpStr += "* mv     <old-file> <new-file>:     Renames <old-file> to <new-file>\n";	//Done
     helpStr += "* mkdir  <directory>:               Creates a new directory called <directory>\n";  //Done
     helpStr += "* cd     <directory>:               Changes current working directory to <directory>\n";  //Done
