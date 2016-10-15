@@ -293,9 +293,9 @@ std::string FileSystem::ls(const std::string & path)
 std::string FileSystem::writeToFile(Directory* dir, const std::string & name, const std::string & data
 	, const unsigned int accessRights)
 {
-	if ((data.length() + 511) / 512 < _freeBlocks.size())  //Check if there is enough space
+	if ((data.length() + 511) / 512 < _freeBlocks.size())  //Check if there is enough space in our unused memory
 	{
-		int index = dir->newFileIndex(name);  //Asks the directory that will be used what index the file (in the files-array the directory has). 
+		int index = dir->newFileIndex(name);  //Asks the directory that will be used what index the file will get (in the files-array the directory has). 
 		if (index == -1)
 			return "Name already used";
 		else
@@ -303,7 +303,7 @@ std::string FileSystem::writeToFile(Directory* dir, const std::string & name, co
 			std::vector<Block*> blocks;
 			std::vector<int> usedIndexes;
 			unsigned int i = 0;
-			//Takes a full block (512 bytes) from 'data' at a time and puts it in a block.
+			//Takes a full block (512 bytes) from 'data' at a time and puts it in a block if it can (/has to).
 			while (i + 512 < data.length())
 			{
 				_memBlockDevice.writeBlock(_freeBlocks.front(), data.substr(i, 512));  //Puts 512 bytes of data in a free block.
