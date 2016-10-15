@@ -278,7 +278,8 @@ std::string FileSystem::ls(const std::string & path)
 }
 
 //Write data to file
-std::string FileSystem::writeToFile(Directory* dir, const std::string & name, const std::string & data, const unsigned int accessRights)
+std::string FileSystem::writeToFile(Directory* dir, const std::string & name, const std::string & data
+	, const unsigned int accessRights)
 {
 	if ((data.length() + 511) / 512 < _freeBlocks.size())  //Check if there is enough space
 	{
@@ -308,7 +309,7 @@ std::string FileSystem::writeToFile(Directory* dir, const std::string & name, co
 			blocks.push_back(&_memBlockDevice[_freeBlocks.front()]);
 			usedIndexes.push_back(_freeBlocks.front());
 			_freeBlocks.pop_front();
-			dir->addFile(index, name, i + left, blocks, usedIndexes);
+			dir->addFile(index, name, accessRights, i + left, blocks, usedIndexes);
 			return "File successfully written.\n";
 		}
 	}
@@ -415,7 +416,9 @@ std::string FileSystem::appendFile(const std::string & name, const std::string &
 					if (file->getAccessRights() == 0 || file->getAccessRights() == 2)
 					{
 						dir->getFileData(appendFileName, data2);
-						dir->removeFile(appendFileName);
+						std::vector<int> usedIndexes;
+						dir->removeFile(appendFileName, usedIndexes);
+						_freeBlocks.insert(std::end(_freeBlocks), std::begin(usedIndexes), std::end(usedIndexes));
 						data = data1 + data2;
 						writeToFile(dir, appendFileName, data, file->getAccessRights());
 						output = "File successfully appended.\n";
@@ -450,7 +453,7 @@ std::string FileSystem::removeFile(const std::string & path)
 		if (dir->removeFile(name, usedIndexes))
 		{
 			_freeBlocks.insert(std::end(_freeBlocks), std::begin(usedIndexes), std::end(usedIndexes));
-			return "";
+			return "Removal successful.\n";
 		}
 		else
 			return "Invalid name.\n";

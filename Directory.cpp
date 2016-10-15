@@ -209,14 +209,13 @@ std::string Directory::addDirectory(const std::string & name)
 }
 
 //Add a child file
-std::string Directory::addFile(const std::string & name, int accessRights, int size, const std::vector<Block*>& blocks, const std::vector<int> & usedIndexes)
+void Directory::addFile(int index, const std::string & name, int accessRights, int size
+	, const std::vector<Block*>& blocks, const std::vector<int> & usedIndexes)
 {
-	_files.push_back(new File(name, accessRights, size, blocks, usedIndexes));
-	_files.insert(_files.begin() + index, new File(name, size, blocks, usedIndexes));
-	_files.push_back(new File(name, size, blocks, usedIndexes));
-	return "";
+	_files.insert(_files.begin() + index, new File(name, accessRights, size, blocks, usedIndexes));
 }
 
+//Rename file
 std::string Directory::renameFile(const std::string & prevName, const std::string & newName)
 {
 	std::string output = "Invalid file name.\n";
@@ -231,20 +230,7 @@ std::string Directory::renameFile(const std::string & prevName, const std::strin
 	return output;
 }
 
-std::string Directory::removeFile(const std::string & name)
-{
-	std::string output = "Invalid file name.\n";
-	for (int i = 0; i < _files.size(); i++)
-		if (_files[i]->getName() == name)
-		{
-			_files.erase(_files.begin() + i);
-			output = "Removal successful.\n";
-			break;
-		}
-	return output;
-}
-
-
+//Remove file
 bool Directory::removeFile(const std::string & name, std::vector<int>& usedIndexes)
 {
 	int index = -1;
