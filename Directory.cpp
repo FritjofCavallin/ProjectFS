@@ -96,7 +96,7 @@ File* Directory::getFile(const unsigned int & index)
 
 File * Directory::getFile(const std::string & name)
 {
-	File* output;
+	File* output = nullptr;
 	for (int i = 0; i < _files.size(); i++)
 		if (_files[i]->getName() == name)
 			output = _files[i];
@@ -209,11 +209,9 @@ std::string Directory::addDirectory(const std::string & name)
 }
 
 //Add a child file
-void Directory::addFile(int index, const std::string & name, int size, const std::vector<Block*>& blocks
-	, const std::vector<int> & usedIndexes)
-std::string Directory::addFile(const std::string & name, int size, const std::vector<Block*>& blocks
-	, const std::vector<int> & usedIndexes)
+std::string Directory::addFile(const std::string & name, int accessRights, int size, const std::vector<Block*>& blocks, const std::vector<int> & usedIndexes)
 {
+	_files.push_back(new File(name, accessRights, size, blocks, usedIndexes));
 	_files.insert(_files.begin() + index, new File(name, size, blocks, usedIndexes));
 	_files.push_back(new File(name, size, blocks, usedIndexes));
 	return "";

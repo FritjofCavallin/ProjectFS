@@ -5,11 +5,11 @@
 #include "filesystem.h"
 
 const int MAXCOMMANDS = 8;
-const int NUMAVAILABLECOMMANDS = 15;
+const int NUMAVAILABLECOMMANDS = 16;
 
 std::string availableCommands[NUMAVAILABLECOMMANDS] = {
     "quit","format","ls","create","cat","createImage","restoreImage",
-    "rm","cp","append","mv","mkdir","cd","pwd","help"
+    "rm","cp","append","mv","mkdir","cd","pwd", "chmod", "help"
 };
 
 /* Takes usercommand from input and returns number of commands, commands are stored in strArr[] */
@@ -53,7 +53,7 @@ int main(void)
 				std::cout << "Enter file content below:\n";
 				std::string data = "";
 				getline(std::cin, data);
-				std::cout << fileSystem.createFile(commandArr[1], data);
+				std::cout << fileSystem.createFile(commandArr[1], data, "0");
 				break;
 			}
             case 4: // cat
@@ -86,7 +86,10 @@ int main(void)
             case 13: // pwd
 				std::cout << fileSystem.getFullPath() + "\n";
                 break;
-            case 14: // help
+			case 14: // chmod
+				std::cout << fileSystem.accessRights(commandArr[1], commandArr[2]);
+				break;
+            case 15: // help
                 std::cout << help() << std::endl;
                 break;
             default:
@@ -142,6 +145,7 @@ std::string help() {
     helpStr += "* mkdir  <directory>:               Creates a new directory called <directory>\n";  //Done
     helpStr += "* cd     <directory>:               Changes current working directory to <directory>\n";  //Done
     helpStr += "* pwd:                              Get current working directory\n";  //Done
+	helpStr += "* chmod:							Change <access rights> for <file>\n";
     helpStr += "* help:                             Prints this help screen\n";  //Done
     return helpStr;
 }
