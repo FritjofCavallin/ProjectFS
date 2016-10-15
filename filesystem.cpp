@@ -351,13 +351,27 @@ std::string FileSystem::getFullPath()
 	return "/" + _currentDir->getPath() + "/";
 }
 
+//rename and/or move a file. mv command in shell
 std::string FileSystem::renameFile(const std::string & prevName, const std::string & newName)
 {
-	std::string output;
-	File* file = _currentDir->getFile(prevName);
+	std::string output, _prevName, _newName, p;
+	p = prevName;
+	_prevName = extractNameFromPath(p);
+	Directory* prevDir = startPathProcessing(p), *newDir;
+	File* file = prevDir->getFile(_prevName);
 	if (file->getAccessRights() == 0 || file->getAccessRights() == 2)
 	{
-		output = _currentDir->renameFile(prevName, newName);
+		p = newName;
+		_newName = extractNameFromPath(p);
+		newDir = startPathProcessing(p);
+		if (prevDir == newDir)
+			output = prevDir->renameFile(_prevName, _newName);
+		else
+		{
+			copyFile(prevName, newName);
+			prevDir->removeFile(_prevName);
+			output = "File successfully moved.\n";
+		}
 	}
 	return output;
 }
