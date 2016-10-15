@@ -33,7 +33,7 @@ std::string Directory::getName()
 	return _name;
 }
 
-//
+//Returns parent of current directory
 Directory * Directory::getParent() const
 {
 	return _parent;
@@ -57,12 +57,13 @@ std::string Directory::toString() const
 //Get info about what is inside this directory
 std::string Directory::getInfoString() const
 {
-	std::string output = _name + "\nDirectories: " + std::to_string(_directories.size());
-	output += "  \tFiles: " + std::to_string(_files.size()) + "\n";
+	std::string output = "Directory name: " + _name + "\nDirectories: " + std::to_string(_directories.size())
+		+ "\nName:                   Dirs:\tFiles:\n";
 	for (unsigned int i = 0; i < _directories.size(); i++)
 	{
 		output.append(_directories[i]->toString());
 	}
+	output += "\nFiles: " + std::to_string(_files.size()) + "\nName:                   Size:\tDisk Size:\n";
 	for (unsigned int i = 0; i < _files.size(); i++)
 	{
 		output.append(_files[i]->getFileInfo());
@@ -70,6 +71,7 @@ std::string Directory::getInfoString() const
 	return output + "\n";
 }
 
+//Returns path to current directory
 std::string Directory::getPath() const
 {
 	if (_parent == nullptr)
@@ -78,6 +80,7 @@ std::string Directory::getPath() const
 		return _parent->getPath() + "/" + _name;
 }
 
+//Returns child directory based on index
 Directory * Directory::getDirectory(const unsigned int & index)
 {
 	if (index > _directories.size() - 1)
@@ -86,6 +89,7 @@ Directory * Directory::getDirectory(const unsigned int & index)
 		return _directories[index];
 }
 
+//Returns child file based on index
 File* Directory::getFile(const unsigned int & index)
 {
 	if (index > _files.size() - 1)
@@ -94,6 +98,7 @@ File* Directory::getFile(const unsigned int & index)
 		return _files[index];
 }
 
+//Returns child file based on name
 File * Directory::getFile(const std::string & name)
 {
 	File* output = nullptr;
@@ -103,6 +108,7 @@ File * Directory::getFile(const std::string & name)
 	return output;
 }
 
+//Stores all data from given param name in given param data
 bool Directory::getFileData(const std::string & name, std::string & data) const
 {
 	int index = -1;
@@ -120,6 +126,7 @@ bool Directory::getFileData(const std::string & name, std::string & data) const
 		return false;
 }
 
+//Stores number of children in param array children
 void Directory::getChildren(int* children)
 {
 	children[0] = _directories.size();
