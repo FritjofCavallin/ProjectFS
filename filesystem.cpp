@@ -31,18 +31,18 @@ void FileSystem::format()
 std::string FileSystem::extractNameFromPath(std::string & path)
 {
 	int lastSlash = path.find_last_of("/");
-	std::string name = "";
-	if (lastSlash == -1)  //Found no '/'
-	{
-		name = path;
-		path = "";
-	}
-	else
-	{
-		name = path.substr(lastSlash + 1);
-		path = path.substr(0, lastSlash + 1);
-	}
-	return name;
+std::string name = "";
+if (lastSlash == -1)  //Found no '/'
+{
+	name = path;
+	path = "";
+}
+else
+{
+	name = path.substr(lastSlash + 1);
+	path = path.substr(0, lastSlash + 1);
+}
+return name;
 }
 
 //Basically preprocessing for processing paths
@@ -70,9 +70,9 @@ std::string FileSystem::createImage(const std::string & path) //real path
 	}
 	else
 	{
-		output = "Invalid path name\n";
+		output = "Invalid path name.\n";
 	}
-	
+
 	return output;
 }
 
@@ -86,64 +86,127 @@ std::string FileSystem::saveToFile(Directory & directory, std::ofstream & saveFi
 	{
 		Directory* dir = directory.getDirectory(i);
 		if (dir == nullptr)
-			output = "Directory " + std::to_string(i) + " in " + directory.getName() + " is non-existant\n";
+			output = "Directory " + std::to_string(i) + " in " + directory.getName() + " is non-existant.\n";
 		else
 		{
 			saveToFile(*directory.getDirectory(i), saveFile);
 		}
 	}
-	for (int i = 0; i > children[1]; i++)
+	for (int i = 0; i < children[1]; i++)
 	{
 		File* file = directory.getFile(i);
 		if (file == nullptr)
-			output = "File " + std::to_string(i) + " in " + directory.getName() + " is non-existant\n";
+			output = "File " + std::to_string(i) + " in " + directory.getName() + " is non-existant.\n";
 		else
 		{
-			saveFile << file->getName() << "\n" << file->getData() << "\n";
+			saveFile << file->getName() << "\n" << file->getSize() << "\n" << file->getData() << "\n";
 		}
 
 	}
-	output = "Save successful\n";
+	output = "Save successful.\n";
 	return output;
 }
 
 std::string FileSystem::restoreImage(const std::string & path)
 {
 	std::string output;
-	std::ifstream loadFile;
-	loadFile.open(path);
-	if (loadFile.is_open)
+	char read = 'a';
+	FILE* loadFile = NULL;
+	errno_t error;
+	if (error = fopen_s(&loadFile, path.c_str(), "r") == 0)
 	{
+		while (read != '\n')
+		{
+			fscanf(loadFile, "%c", &read);
+		}
 		output = loadFromFile(_root, loadFile);
 	}
 	else
 	{
-		output = "Invalid path name\n";
+		output = "Invalid path name.\n";
 	}
 
 	return output;
 }
 
-std::string FileSystem::loadFromFile(Directory & directory, std::ifstream & loadFile)
+std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 {
-	std::string output, name;
-	int children[2] = { 0,0 };
-	loadFile >> name;
-	loadFile >> children[0];
-	loadFile >> children[1];
-	for (int i = 0; i < children[0]; i++)
+	std::string name, data, children[2], size;
+	char read;
+
+	//reads number of directory children, 0: directories, 1: files
+	for (int i = 0; i < 2; i++)
 	{
-		loadFile >> name;
-		directory.addDirectory(name);
-		loadFromFile(*directory.getDirectory(i), loadFile);
-	}
-	for (int i = 0; i < children[1]; i++)
-	{
-		loadFile >> name;
-		directory.addFile(name, );
+		read = 'a';
+		while (1)
+		{
+			fscanf(loadFile, "%c", &read);
+			if (read != '\n')
+			{
+				children[i].append(&read);
+			}
+			else
+				break;
+		}
 	}
 
-	return output;
+	//reads and stores the subderectories for the current directory
+	for (int i = 0; i < std::stoi(children[0]); i++) //std::stoi converts string to int
+	{
+		//reads and stores directory name
+		read = 'a';
+		while (1)
+		{
+			fscanf(loadFile, "%c", &read);
+			if (read != '\n')
+				name += read;
+			else
+				break;
+		}
+		directory.addDirectory(name);
+		loadFromFile(*directory.getDirectory(i), loadFile);
+		name = "";
+	}
+
+	//reads and stores files
+	for (int i = 0; i < std::stoi(children[1]); i++) //std::stoi converts string to int
+	{
+		//reads and stores file name
+		read = 'a';
+		while (1)
+		{
+			fscanf(loadFile, "%c", &read);
+			if (read != '\n')
+				name += read;
+			else
+				break;
+		}
+
+		//reads and stores file size
+		read = 'a';
+		while (1)
+		{
+			fscanf(loadFile, "%c", &read);
+			if (read != '\n')
+			{
+				size += read;
+			}
+			else
+				break;
+		}
+
+		//reads and stores file data
+		for (int j = 0; j < std::stoi(size); j++)
+		{
+			fscanf(loadFile, "%c", &read);
+			data += read;
+		}
+		writeToFile(&directory, name, data);
+		//fscanf(loadFile, "%c", read); //reads the line feed after the data
+		name = ""; //resets name string
+	}
+
+	return "Load successful.\n";
 }
 
 //Create a new file

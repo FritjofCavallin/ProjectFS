@@ -63,7 +63,8 @@ int main(void)
 				std::cout << fileSystem.createImage(commandArr[1]);
                 break;
             case 6: // restoreImage
-                break;
+				std::cout << fileSystem.restoreImage(commandArr[1]);
+				break;
             case 7: // rm
                 break;
             case 8: // cp

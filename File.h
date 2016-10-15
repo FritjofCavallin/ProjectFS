@@ -17,6 +17,7 @@ public:
 	virtual ~File();
 	std::string getName() const;
 	std::string getFileInfo() const;
-	std::string getName() const;
 	std::string getData() const;
+	int getSize();
+};
 

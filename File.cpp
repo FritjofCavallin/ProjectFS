@@ -44,11 +44,6 @@ std::string File::getFileInfo() const
 		std::to_string(_blocks.size() * 512) + "\n";
 }
 
-std::string File::getName() const
-{
-	return _name;
-}
-
 std::string File::getData() const
 {
 	std::string data = "";
@@ -58,4 +53,9 @@ std::string File::getData() const
 		data += _blocks[i]->toString();
 	}
 	return data.substr(0, _realSize);
+}
+
+int File::getSize()
+{
+	return _realSize;
 }
