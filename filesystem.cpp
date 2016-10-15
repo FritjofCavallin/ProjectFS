@@ -51,7 +51,7 @@ Directory * FileSystem::startPathProcessing(const std::string & path)
 	std::string p = path;
 	//Remove '/' at the end of path for consistency
 	if (p.length() > 3 && p[p.length() - 1] == '/')
-		p = p.substr(0, p.length() - 2);
+		p = p.substr(0, p.length() - 1);
 
 	if (p[0] == '.')  //Relative path
 		return _currentDir->processPath(p);
