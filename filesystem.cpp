@@ -368,8 +368,10 @@ std::string FileSystem::renameFile(const std::string & prevName, const std::stri
 			output = prevDir->renameFile(_prevName, _newName);
 		else
 		{
-			copyFile(prevName, newName);
-			prevDir->removeFile(_prevName);
+			copyFile(prevName, newName); 
+			std::vector<int> usedIndexes;
+			prevDir->removeFile(_prevName, usedIndexes);
+			_freeBlocks.insert(std::end(_freeBlocks), std::begin(usedIndexes), std::end(usedIndexes));
 			output = "File successfully moved.\n";
 		}
 	}
