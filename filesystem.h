@@ -36,6 +36,7 @@ public:
 	std::string renameFile(const std::string & prevName, const std::string & newName);
 	std::string removeFile(const std::string & name);
 	std::string copyFile(const std::string & name, const std::string & path);
+	std::string appendFile(const std::string & name, const std::string & path);
 
     /* These commands needs to implemented
      *

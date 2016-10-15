@@ -351,3 +351,32 @@ std::string FileSystem::copyFile(const std::string & name, const std::string & p
 
 	return output;
 }
+
+std::string FileSystem::appendFile(const std::string & name, const std::string & path)
+{
+	std::string output, data, data1, data2;
+	if (_currentDir->getFileData(name, data1))
+	{
+		std::string p = path;
+		std::string appendFileName = extractNameFromPath(p);
+		Directory* dir = startPathProcessing(p);
+		if (dir != nullptr)
+		{
+			if (dir->getFileData(appendFileName, data2))
+			{
+				dir->removeFile(appendFileName);
+				data = data1 + data2;
+				writeToFile(dir, appendFileName, data);
+				output = "File successfully appended.\n";
+			}
+			else
+				output = "Invalid file 2 name or path.\n";
+		}
+		else
+			output = "Invalid path name.\n";
+	}
+	else
+		output = "Invalid file 1 name.\n";
+
+	return output;
+}
