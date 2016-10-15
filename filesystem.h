@@ -33,7 +33,8 @@ public:
 	std::string makeDir(const std::string & path);
 	std::string goToFolder(const std::string & path, std::string & fullPath);
 	std::string getFullPath();
-	std::string renameFile(std::string prevName, std:: string newName);
+	std::string renameFile(const std::string & prevName, const std::string & newName);
+	std::string removeFile(const std::string & name);
 
     /* These commands needs to implemented
      *

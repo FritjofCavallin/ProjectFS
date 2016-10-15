@@ -66,6 +66,7 @@ int main(void)
 				std::cout << fileSystem.restoreImage(commandArr[1]);
 				break;
             case 7: // rm
+				std::cout << fileSystem.removeFile(commandArr[1]);
                 break;
             case 8: // cp
                 break;

@@ -184,7 +184,21 @@ std::string Directory::renameFile(const std::string & prevName, const std::strin
 		{
 			_files[i]->setName(newName);
 			output = "Rename successful.\n";
+			break;
 		}
 
+	return output;
+}
+
+std::string Directory::removeFile(const std::string & name)
+{
+	std::string output = "No such file.\n";
+	for (int i = 0; i < _files.size(); i++)
+		if (_files[i]->getName() == name)
+		{
+			_files.erase(_files.begin() + i);
+			output = "Removal successful.\n";
+			break;
+		}
 	return output;
 }

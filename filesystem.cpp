@@ -218,7 +218,7 @@ std::string FileSystem::createFile(const std::string & path, const std::string &
 	if (dir != nullptr)
 	{
 		writeToFile(dir, name, data);
-		return "";
+		return "Creation successful.\n";
 	}
 	else
 		return "Invalid path.\n";
@@ -322,8 +322,12 @@ std::string FileSystem::getFullPath()
 	return "/" + _currentDir->getPath() + "/";
 }
 
-std::string FileSystem::renameFile(std::string prevName, std::string newName)
+std::string FileSystem::renameFile(const std::string & prevName, const std::string & newName)
 {
-	//note: current working directory
 	return _currentDir->renameFile(prevName, newName);
+}
+
+std::string FileSystem::removeFile(const std::string & name)
+{
+	return _currentDir->removeFile(name);
 }
