@@ -364,6 +364,7 @@ std::string FileSystem::copyFile(const std::string & name, const std::string & p
 	Directory* dir = startPathProcessing(p);
 	if ((file = dir->getFile(fileName)) != nullptr)
 	{
+		dir->getFileData(fileName, data);
 		p = path;
 		fileName = extractNameFromPath(p);
 		if (p != "")
