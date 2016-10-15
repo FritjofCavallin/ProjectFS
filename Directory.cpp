@@ -152,32 +152,35 @@ int Directory::newFileIndex(const std::string & name)
 //Processes the path-string given
 Directory * Directory::processPath(const std::string & path)
 {
-	if (path != "")
+	if (path != "")  //Seems stupid but is needed
 	{
-		if (path == "..")
+		if (path == "..")  //Checks if the only thing left is to go up one level
 			return _parent;
-		else if (path.substr(0, 3) == "../")
+		else if (path.substr(0, 3) == "../")  //Checks if it should go up one level (and possibly more, unlike the first check)
 			return _parent->processPath(path.substr(3));
-		else if (path.substr(0, 2) == "./")
+		else if (path.substr(0, 2) == "./")  //Checks if it should work in the current directory
 			return this->processPath(path.substr(2));
+		//Extracts the next directory name in the path
 		unsigned int end = path.find_first_of("/");
 		bool lastPart = false;
-		if (end >= path.length() - 1)
+		if (end >= path.length() - 1)  //Checks if this is the last part of the path, aka the final directory
 			lastPart = true;
 		std::string testString = path.substr(0, end);
+		//Searches for a child directory with a matching name in this directory
 		for (unsigned int i = 0; i < _directories.size(); i++)
 		{
 			if (testString == _directories[i]->getName())
 			{
-				if (lastPart)
+				if (lastPart)  //If lastPart is true nothing remains of path and the recursion is done
 					return _directories[i];
 				else
 					return _directories[i]->processPath(path.substr(end + 1));
 			}
 		}
+		//No matching name found
 		return nullptr;
 	}
-	else
+	else  //Just trust me, this is needed
 	{
 		return this;
 	}

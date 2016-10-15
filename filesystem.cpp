@@ -292,7 +292,7 @@ std::string FileSystem::writeToFile(Directory* dir, const std::string & name, co
 {
 	if ((data.length() + 511) / 512 < _freeBlocks.size())  //Check if there is enough space
 	{
-		int index = dir->newFileIndex(name);
+		int index = dir->newFileIndex(name);  //Asks the directory that will be used what index the file (in the files-array the directory has). 
 		if (index == -1)
 			return "Name already used";
 		else
@@ -300,25 +300,28 @@ std::string FileSystem::writeToFile(Directory* dir, const std::string & name, co
 			std::vector<Block*> blocks;
 			std::vector<int> usedIndexes;
 			unsigned int i = 0;
-			//Using "full" blocks
+			//Takes a full block (512 bytes) from 'data' at a time and puts it in a block.
 			while (i + 512 < data.length())
 			{
-				_memBlockDevice.writeBlock(_freeBlocks.front(), data.substr(i, 512));
+				_memBlockDevice.writeBlock(_freeBlocks.front(), data.substr(i, 512));  //Puts 512 bytes of data in a free block.
+				blocks.push_back(&_memBlockDevice[_freeBlocks.front()]);  //Stores a pointer to the block that was just written to.
+				usedIndexes.push_back(_freeBlocks.front());  //Stores the index of the block that was just used.
+				_freeBlocks.pop_front();  //Deletes the index just used from the list of usable indexes.
+				i += 512;
+			}
+			int left = data.length() - i;
+			if (left != 0)  //Checks if there is any data left to store.
+			{
+				std::string last = ".";
+				last.replace(0, 1, 512, '*');  //Creates a 512 byte long string full of '*'
+				last.replace(0, left, data.substr(i, left));  //Relpaces as much as needed with actual data. The string is still 512 bytes long!
+				//Same as in the while-loop above...
+				_memBlockDevice.writeBlock(_freeBlocks.front(), last);
 				blocks.push_back(&_memBlockDevice[_freeBlocks.front()]);
 				usedIndexes.push_back(_freeBlocks.front());
 				_freeBlocks.pop_front();
-				i += 512;
 			}
-			//The last data
-			std::string last = ".";
-			last.replace(0, 1, 512, '*');
-			int left = data.length() - i;
-			last.replace(0, left, data.substr(i, left));
-			_memBlockDevice.writeBlock(_freeBlocks.front(), last);
-			blocks.push_back(&_memBlockDevice[_freeBlocks.front()]);
-			usedIndexes.push_back(_freeBlocks.front());
-			_freeBlocks.pop_front();
-			dir->addFile(index, name, accessRights, i + left, blocks, usedIndexes);
+			dir->addFile(index, name, accessRights, i + left, blocks, usedIndexes);  //Sends all the data to the directory which in turn actually creates and stores a file-object.
 			return "File successfully written.\n";
 		}
 	}
