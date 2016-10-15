@@ -31,18 +31,18 @@ void FileSystem::format()
 std::string FileSystem::extractNameFromPath(std::string & path)
 {
 	int lastSlash = path.find_last_of("/");
-	std::string name = "";
-	if (lastSlash == -1)  //Found no '/'
-	{
-		name = path;
-		path = "";
-	}
-	else
-	{
-		name = path.substr(lastSlash + 1);
-		path = path.substr(0, lastSlash + 1);
-	}
-	return name;
+std::string name = "";
+if (lastSlash == -1)  //Found no '/'
+{
+	name = path;
+	path = "";
+}
+else
+{
+	name = path.substr(lastSlash + 1);
+	path = path.substr(0, lastSlash + 1);
+}
+return name;
 }
 
 //Basically preprocessing for processing paths
@@ -67,12 +67,13 @@ std::string FileSystem::createImage(const std::string & path) //real path
 	if (saveFile.is_open())
 	{
 		output = saveToFile(_root, saveFile);
+		saveFile.close();
 	}
 	else
 	{
-		output = "Invalid path name\n";
+		output = "Real file active or invalid path name.\n";
 	}
-	
+
 	return output;
 }
 
@@ -86,25 +87,124 @@ std::string FileSystem::saveToFile(Directory & directory, std::ofstream & saveFi
 	{
 		Directory* dir = directory.getDirectory(i);
 		if (dir == nullptr)
-			output = "Directory " + std::to_string(i) + " in " + directory.getName() + " is non-existant\n";
+			output = "Directory " + std::to_string(i) + " in " + directory.getName() + " is non-existant.\n";
 		else
 		{
 			saveToFile(*directory.getDirectory(i), saveFile);
 		}
 	}
-	for (int i = 0; i > children[1]; i++)
+	for (int i = 0; i < children[1]; i++)
 	{
 		File* file = directory.getFile(i);
 		if (file == nullptr)
-			output = "File " + std::to_string(i) + " in " + directory.getName() + " is non-existant\n";
+			output = "File " + std::to_string(i) + " in " + directory.getName() + " is non-existant.\n";
 		else
 		{
-			saveFile << file->getFileInfo().substr(0, 15) << "\n" << file->getData() << "\n";
+			saveFile << file->getName() << "\n" << file->getSize() << "\n" << file->getData() << "\n";
 		}
 
 	}
-	output = "Save successful\n";
+	output = "Save successful.\n";
 	return output;
+}
+
+std::string FileSystem::restoreImage(const std::string & path)
+{
+	std::string output;
+	char read = 'a';
+	FILE* loadFile = NULL;
+	errno_t error;
+	if (error = fopen_s(&loadFile, path.c_str(), "r") == 0)
+	{
+		while (read != '\n')
+		{
+			fscanf(loadFile, "%c", &read);
+		}
+		output = loadFromFile(_root, loadFile);
+		fclose(loadFile);
+	}
+	else
+	{
+		output = "Invalid path name.\n";
+	}
+
+	return output;
+}
+
+std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
+{
+	std::string name, data, children[2], size;
+	char read;
+
+	//reads number of directory children, 0: directories, 1: files
+	for (int i = 0; i < 2; i++)
+	{
+		while (1)
+		{
+			fscanf(loadFile, "%c", &read);
+			if (read != '\n')
+			{
+				children[i]+= read;
+			}
+			else
+				break;
+		}
+	}
+
+	//reads and stores the subderectories for the current directory
+	for (int i = 0; i < std::stoi(children[0]); i++) //std::stoi converts string to int
+	{
+		//reads and stores directory name
+		while (1)
+		{
+			fscanf(loadFile, "%c", &read);
+			if (read != '\n')
+				name += read;
+			else
+				break;
+		}
+		directory.addDirectory(name);
+		loadFromFile(*directory.getDirectory(i), loadFile);
+		name = "";
+	}
+
+	//reads and stores files
+	for (int i = 0; i < std::stoi(children[1]); i++) //std::stoi converts string to int
+	{
+		//reads and stores file name
+		while (1)
+		{
+			fscanf(loadFile, "%c", &read);
+			if (read != '\n')
+				name += read;
+			else
+				break;
+		}
+
+		//reads and stores file size
+		while (1)
+		{
+			fscanf(loadFile, "%c", &read);
+			if (read != '\n')
+			{
+				size += read;
+			}
+			else
+				break;
+		}
+
+		//reads and stores file data
+		for (int j = 0; j < std::stoi(size); j++)
+		{
+			fscanf(loadFile, "%c", &read);
+			data += read;
+		}
+		fscanf(loadFile, "%c", &read); //reads the line feed after the data
+		writeToFile(&directory, name, data);
+		name = "";
+	}
+
+	return "Load successful.\n";
 }
 
 //Create a new file
@@ -116,7 +216,7 @@ std::string FileSystem::createFile(const std::string & path, const std::string &
 	if (dir != nullptr)
 	{
 		writeToFile(dir, name, data);
-		return "";
+		return "Creation successful.\n";
 	}
 	else
 		return "Invalid path.\n";
@@ -221,6 +321,78 @@ std::string FileSystem::goToFolder(const std::string & path, std::string & fullP
 std::string FileSystem::getFullPath()
 {
 	return "/" + _currentDir->getPath() + "/";
+}
+
+std::string FileSystem::renameFile(const std::string & prevName, const std::string & newName)
+{
+	File* file = _currentDir->getFile(prevName);
+
+
+	return _currentDir->renameFile(prevName, newName);
+}
+
+std::string FileSystem::removeFile(const std::string & name)
+{
+	return _currentDir->removeFile(name);
+}
+
+std::string FileSystem::copyFile(const std::string & name, const std::string & path)
+{
+	std::string output, data;
+	if (_currentDir->getFileData(name, data))
+	{
+		std::string p = path;
+		std::string newFileName = extractNameFromPath(p);
+		if (p != "")
+		{
+			Directory* dir = startPathProcessing(p);
+			if (dir != nullptr)
+			{
+				writeToFile(dir, newFileName, data);
+				output = "File copy successful.\n";
+			}
+			else
+				output = "Invalid path name.\n";
+		}
+		else
+		{
+			writeToFile(_currentDir, newFileName, data);
+			output = "File copy successful.\n";
+		}
+	}
+	else
+		output = "Invalid file name.\n";
+
+	return output;
+}
+
+std::string FileSystem::appendFile(const std::string & name, const std::string & path)
+{
+	std::string output, data, data1, data2;
+	if (_currentDir->getFileData(name, data1))
+	{
+		std::string p = path;
+		std::string appendFileName = extractNameFromPath(p);
+		Directory* dir = startPathProcessing(p);
+		if (dir != nullptr)
+		{
+			if (dir->getFileData(appendFileName, data2))
+			{
+				dir->removeFile(appendFileName);
+				data = data1 + data2;
+				writeToFile(dir, appendFileName, data);
+				output = "File successfully appended.\n";
+			}
+			else
+				output = "Invalid file 2 name or path.\n";
+		}
+		else
+			output = "Invalid path name.\n";
+	}
+	else
+		output = "Invalid file 1 name.\n";
+
+	return output;
 }
 
 //Removes a file from the system

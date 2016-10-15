@@ -21,5 +21,7 @@ public:
 	std::string getFileInfo() const;
 	std::string getData() const;
 	std::vector<int> getUsedIndexes() const;
+	int getSize() const;
+	void setName(const std::string & name);
 };
 

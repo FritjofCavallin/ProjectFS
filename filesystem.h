@@ -5,6 +5,7 @@
 
 #include "memblockdevice.h"
 #include "Directory.h"
+#include "stdio.h"
 
 class FileSystem
 {
@@ -23,6 +24,8 @@ public:
 	void format();
 	std::string createImage(const std::string & path);
 	std::string saveToFile(Directory & directory, std::ofstream & saveFile);
+	std::string restoreImage(const std::string & path);
+	std::string loadFromFile(Directory & directory, FILE* loadFile);
 	std::string createFile(const std::string & path, const std::string & data);
 	std::string getFileData(const std::string & path);
 	std::string ls(const std::string & path);
@@ -30,6 +33,10 @@ public:
 	std::string makeDir(const std::string & path);
 	std::string goToFolder(const std::string & path, std::string & fullPath);
 	std::string getFullPath();
+	std::string renameFile(const std::string & prevName, const std::string & newName);
+	std::string removeFile(const std::string & name);
+	std::string copyFile(const std::string & name, const std::string & path);
+	std::string appendFile(const std::string & name, const std::string & path);
 	std::string removeFile(const std::string & path);
 
     /* These commands needs to implemented

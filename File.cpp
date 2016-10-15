@@ -58,6 +58,16 @@ std::string File::getData() const
 	return data.substr(0, _realSize);
 }
 
+int File::getSize() const
+{
+	return _realSize;
+}
+
+void File::setName(const std::string & name)
+{
+	_name = name;
+}
+
 std::vector<int> File::getUsedIndexes() const
 {
 	return _usedIndexes;

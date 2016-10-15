@@ -94,6 +94,15 @@ File* Directory::getFile(const unsigned int & index)
 		return _files[index];
 }
 
+File * Directory::getFile(const std::string & name)
+{
+	File* output;
+	for (int i = 0; i < _files.size(); i++)
+		if (_files[i]->getName() == name)
+			output = _files[i];
+	return output;
+}
+
 bool Directory::getFileData(const std::string & name, std::string & data) const
 {
 	int index = -1;
@@ -175,6 +184,33 @@ std::string Directory::addFile(const std::string & name, int size, const std::ve
 {
 	_files.push_back(new File(name, size, blocks, usedIndexes));
 	return "";
+}
+
+std::string Directory::renameFile(const std::string & prevName, const std::string & newName)
+{
+	std::string output = "Invalid file name.\n";
+	for (int i = 0; i < _files.size(); i++)
+		if (_files[i]->getName() == prevName)
+		{
+			_files[i]->setName(newName);
+			output = "Rename successful.\n";
+			break;
+		}
+
+	return output;
+}
+
+std::string Directory::removeFile(const std::string & name)
+{
+	std::string output = "Invalid file name.\n";
+	for (int i = 0; i < _files.size(); i++)
+		if (_files[i]->getName() == name)
+		{
+			_files.erase(_files.begin() + i);
+			output = "Removal successful.\n";
+			break;
+		}
+	return output;
 }
 
 

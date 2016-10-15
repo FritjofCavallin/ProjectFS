@@ -63,15 +63,19 @@ int main(void)
 				std::cout << fileSystem.createImage(commandArr[1]);
                 break;
             case 6: // restoreImage
-                break;
+				std::cout << fileSystem.restoreImage(commandArr[1]);
+				break;
             case 7: // rm
 				std::cout << fileSystem.removeFile(commandArr[1]);
                 break;
             case 8: // cp
+				std::cout << fileSystem.copyFile(commandArr[1], commandArr[2]);
                 break;
             case 9: // append
+				std::cout << fileSystem.appendFile(commandArr[1], commandArr[2]);
                 break;
             case 10: // mv
+				std::cout << fileSystem.renameFile(commandArr[1], commandArr[2]);
                 break;
             case 11: // mkdir
 				std::cout << fileSystem.makeDir(commandArr[1]);
@@ -127,14 +131,14 @@ std::string help() {
     helpStr += "* quit:                             Quit OSD Disk Tool\n";  //Done
     helpStr += "* format;                           Formats disk\n";  //Begun, but not currently working on...
     helpStr += "* ls     <path>:                    Lists contents of <path>.\n";  //Done
-    helpStr += "* create <path>:                    Creates a file and stores contents in <path>\n";  //Done
-    helpStr += "* cat    <path>:                    Dumps contents of <file>.\n";  //Done
-    helpStr += "* createImage  <real-file>:         Saves disk to <real-file>\n";
-    helpStr += "* restoreImage <real-file>:         Reads <real-file> onto disk\n";
-    helpStr += "* rm     <file>:                    Removes <file>\n";  //Done
-    helpStr += "* cp     <source> <destination>:    Copy <source> to <destination>\n";
-    helpStr += "* append <source> <destination>:    Appends contents of <source> to <destination>\n";
-    helpStr += "* mv     <old-file> <new-file>:     Renames <old-file> to <new-file>\n";
+    helpStr += "* create <path>:                    Creates a file and stores contents in <path>\n";	//Done
+    helpStr += "* cat    <path>:                    Dumps contents of <file>.\n";	//Done
+    helpStr += "* createImage  <real-file>:         Saves disk to <real-file>\n";	//Done
+    helpStr += "* restoreImage <real-file>:         Reads <real-file> onto disk\n";	//Done
+    helpStr += "* rm     <file>:                    Removes <file>\n";	//Done
+    helpStr += "* cp     <source> <destination>:    Copy <source> to <destination>\n";	//Done
+    helpStr += "* append <source> <destination>:    Appends contents of <source> to <destination>\n"; //Done
+    helpStr += "* mv     <old-file> <new-file>:     Renames <old-file> to <new-file>\n";	//Done
     helpStr += "* mkdir  <directory>:               Creates a new directory called <directory>\n";  //Done
     helpStr += "* cd     <directory>:               Changes current working directory to <directory>\n";  //Done
     helpStr += "* pwd:                              Get current working directory\n";  //Done
