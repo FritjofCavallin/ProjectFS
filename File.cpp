@@ -26,6 +26,7 @@ File::~File()
 	//Nothing
 }
 
+//Returns name of file
 std::string File::getName() const
 {
 	return _name;
@@ -58,26 +59,31 @@ std::string File::getData() const
 	return data.substr(0, _realSize);
 }
 
+//Returns acces right value
 int File::getAccessRights()
 {
 	return _accessRights;
 }
 
+//Returns size of file
 int File::getSize() const
 {
 	return _realSize;
 }
 
+//Sets name of file to param name
 void File::setName(const std::string & name)
 {
 	_name = name;
 }
 
+//Sets acces rights to param accesRights
 void File::setAccessRights(const unsigned int & accessRights)
 {
 	_accessRights = accessRights;
 }
 
+//Returns vec array of used indexes
 std::vector<int> File::getUsedIndexes() const
 {
 	return _usedIndexes;

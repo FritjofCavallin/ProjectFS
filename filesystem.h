@@ -26,12 +26,10 @@ public:
 	std::string saveToFile(Directory & directory, std::ofstream & saveFile);
 	std::string restoreImage(const std::string & path);
 	std::string loadFromFile(Directory & directory, FILE* loadFile);
-	std::string createFile(const std::string & path, const std::string & data
-		, const std::string & accessRights);
+	std::string createFile(const std::string & path, const std::string & data, const std::string & accessRights);
 	std::string getFileData(const std::string & path);
 	std::string ls(const std::string & path);
-	std::string writeToFile(Directory* dir, const std::string & name, const std::string & data
-		, const unsigned int accessRights);
+	std::string writeToFile(Directory* dir, const std::string & name, const std::string & data, const unsigned int accessRights);
 	std::string makeDir(const std::string & path);
 	std::string goToFolder(const std::string & path, std::string & fullPath);
 	std::string getFullPath();
