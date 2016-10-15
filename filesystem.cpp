@@ -31,18 +31,18 @@ void FileSystem::format()
 std::string FileSystem::extractNameFromPath(std::string & path)
 {
 	int lastSlash = path.find_last_of("/");
-std::string name = "";
-if (lastSlash == -1)  //Found no '/'
-{
-	name = path;
-	path = "";
-}
-else
-{
-	name = path.substr(lastSlash + 1);
-	path = path.substr(0, lastSlash + 1);
-}
-return name;
+	std::string name = "";
+	if (lastSlash == -1)  //Found no '/'
+	{
+		name = path;
+		path = "";
+	}
+	else
+	{
+		name = path.substr(lastSlash + 1);
+		path = path.substr(0, lastSlash + 1);
+	}
+	return name;
 }
 
 //Basically preprocessing for processing paths
@@ -261,29 +261,35 @@ std::string FileSystem::writeToFile(Directory* dir, const std::string & name, co
 {
 	if ((data.length() + 511) / 512 < _freeBlocks.size())  //Check if there is enough space
 	{
-		std::vector<Block*> blocks;
-		std::vector<int> usedIndexes;
-		unsigned int i = 0;
-		//Using "full" blocks
-		while (i + 512 < data.length())
+		int index = dir->newFileIndex(name);
+		if (index == -1)
+			return "Name already used";
+		else
 		{
-			_memBlockDevice.writeBlock(_freeBlocks.front(), data.substr(i, 512));
+			std::vector<Block*> blocks;
+			std::vector<int> usedIndexes;
+			unsigned int i = 0;
+			//Using "full" blocks
+			while (i + 512 < data.length())
+			{
+				_memBlockDevice.writeBlock(_freeBlocks.front(), data.substr(i, 512));
+				blocks.push_back(&_memBlockDevice[_freeBlocks.front()]);
+				usedIndexes.push_back(_freeBlocks.front());
+				_freeBlocks.pop_front();
+				i += 512;
+			}
+			//The last data
+			std::string last = ".";
+			last.replace(0, 1, 512, '*');
+			int left = data.length() - i;
+			last.replace(0, left, data.substr(i, left));
+			_memBlockDevice.writeBlock(_freeBlocks.front(), last);
 			blocks.push_back(&_memBlockDevice[_freeBlocks.front()]);
 			usedIndexes.push_back(_freeBlocks.front());
 			_freeBlocks.pop_front();
-			i += 512;
+			dir->addFile(index, name, i + left, blocks, usedIndexes);
+			return "File successfully written.\n";
 		}
-		//The last data
-		std::string last = ".";
-		last.replace(0, 1, 512, '*');
-		int left = data.length() - i;
-		last.replace(0, left, data.substr(i, left));
-		_memBlockDevice.writeBlock(_freeBlocks.front(), last);
-		blocks.push_back(&_memBlockDevice[_freeBlocks.front()]);
-		usedIndexes.push_back(_freeBlocks.front());
-		_freeBlocks.pop_front();
-		dir->addFile(name, i + left, blocks, usedIndexes);
-		return "";
 	}
 	else
 	{

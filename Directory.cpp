@@ -126,6 +126,29 @@ void Directory::getChildren(int* children)
 	children[1] = _files.size();
 }
 
+//Calculates the index of a new file with the name 'name'. Returns -1 if name is already used
+int Directory::newFileIndex(const std::string & name)
+{
+	//Special case if it´s the first one created
+	if (_files.size() == 0)
+	{
+		return 0;
+	}
+	//Normal case
+	else
+	{
+		unsigned int i = 0;
+		//Loop while 'name' comes (alphabetically) after the directory-names tested 
+		while (i < _files.size() && strcmp(name.c_str(), _files[i]->getName().c_str()) > 0)
+		{
+			if (name == _files[i]->getName())
+				return -1;
+			i++;
+		}
+		return i;
+	}
+}
+
 //Processes the path-string given
 Directory * Directory::processPath(const std::string & path)
 {
@@ -163,27 +186,33 @@ Directory * Directory::processPath(const std::string & path)
 //Add a child directory
 std::string Directory::addDirectory(const std::string & name)
 {
-	bool ok = true;
-	for (unsigned int i = 0; i < _directories.size() && ok; i++)
-	{
-		if (name == _directories[i]->getName())
-			ok = false;
-	}
-	if (ok)
+	//Special case if it´s the first one created
+	if (_directories.size() == 0)
 	{
 		_directories.push_back(new Directory(name, this));
-		return "";
+		return "Directory creation successful!\n";
 	}
+	//Normal case
 	else
-		return "Name already used.\n";
+	{
+		unsigned int i = 0;
+		//Loop while 'name' comes (alphabetically) after the directory-names tested 
+		while (i < _directories.size() && strcmp(name.c_str(), _directories[i]->getName().c_str()) > 0)
+		{
+			if (name == _directories[i]->getName())
+				return "Name already used.\n";
+			i++;
+		}
+		_directories.insert(_directories.begin() + i, new Directory(name, this));
+		return "Directory creation successful!\n";
+	}
 }
 
 //Add a child file
-std::string Directory::addFile(const std::string & name, int size, const std::vector<Block*>& blocks
+void Directory::addFile(int index, const std::string & name, int size, const std::vector<Block*>& blocks
 	, const std::vector<int> & usedIndexes)
 {
-	_files.push_back(new File(name, size, blocks, usedIndexes));
-	return "";
+	_files.insert(_files.begin() + index, new File(name, size, blocks, usedIndexes));
 }
 
 std::string Directory::renameFile(const std::string & prevName, const std::string & newName)
