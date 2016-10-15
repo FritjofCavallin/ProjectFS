@@ -211,8 +211,12 @@ std::string Directory::addDirectory(const std::string & name)
 //Add a child file
 void Directory::addFile(int index, const std::string & name, int size, const std::vector<Block*>& blocks
 	, const std::vector<int> & usedIndexes)
+std::string Directory::addFile(const std::string & name, int size, const std::vector<Block*>& blocks
+	, const std::vector<int> & usedIndexes)
 {
 	_files.insert(_files.begin() + index, new File(name, size, blocks, usedIndexes));
+	_files.push_back(new File(name, size, blocks, usedIndexes));
+	return "";
 }
 
 std::string Directory::renameFile(const std::string & prevName, const std::string & newName)
