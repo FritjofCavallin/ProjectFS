@@ -503,7 +503,13 @@ std::string FileSystem::makeDir(const std::string & path)
 std::string FileSystem::goToFolder(const std::string & path, std::string & fullPath)
 {
 	Directory* dir = startPathProcessing(path);
-	if (dir != nullptr) //Checks whether the path exists
+	if (path == "root")
+	{
+		_currentDir = _root;
+		fullPath = "/root/";
+		return "";
+	}
+	else if (dir != nullptr) //Checks whether the path exists
 	{
 		_currentDir = dir;
 		fullPath = getFullPath();
