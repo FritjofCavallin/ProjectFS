@@ -251,14 +251,14 @@ std::string FileSystem::getDirectoryInfo(const std::string & path)
 }
 
 //Create a new file
-std::string FileSystem::createFile(const std::string & path, const std::string & data, const std::string & accessRights)
+std::string FileSystem::createFile(const std::string & path, const std::string & data)
 {
 	std::string p = path;
 	std::string name = extractNameFromPath(p);
 	Directory* dir = startPathProcessing(p);
 	if (dir != nullptr) //Checks whether the path exists
 	{
-		return writeToFile(dir, name, data, std::stoi(accessRights));
+		return writeToFile(dir, name, data, 0);
 	}
 	else
 		return "Invalid path.\n";
@@ -315,6 +315,7 @@ std::string FileSystem::createImage(const std::string & path) //real path
 //Initializes restoring virtual disk from real storage
 std::string FileSystem::restoreImage(const std::string & path)
 {
+	format();
 	std::string output;
 	char read = 'a';
 	FILE* loadFile = NULL;

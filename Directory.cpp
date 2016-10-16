@@ -41,22 +41,19 @@ Directory * Directory::getParent() const
 //Get info about only this directory
 std::string Directory::toString() const
 {
-	std::string tempName = _name;
-	if (_name.length() > 16)
-		tempName = _name.substr(0, 16);
-	std::string spaces = "    ";
-	for (unsigned int i = 0; i < 16 - tempName.length(); i++)
-	{
-		spaces += " ";
-	}
-	return "D:  " + tempName + spaces + std::to_string(_directories.size()) + "\t"
+	std::string tempName = ".";
+	tempName.replace(0, 1, 24, ' ');
+	int l = int(fminf(float(_name.length()), 24.f));
+	tempName.replace(0, l, _name.substr(0, l));
+
+	return tempName + std::to_string(_directories.size()) + "\t"
 		+ std::to_string(_files.size()) + "\n";
 }
 
 //Get info about what is inside this directory
 std::string Directory::getInfoString() const
 {
-	std::string output = "Directory name: " + _name + "\nDirectories: " + std::to_string(_directories.size())
+	std::string output = "\nDirectory name: " + _name + "\n\nDirectories: " + std::to_string(_directories.size())
 		+ "\nName:                   Dirs:\tFiles:\n";
 	for (unsigned int i = 0; i < _directories.size(); i++)
 	{

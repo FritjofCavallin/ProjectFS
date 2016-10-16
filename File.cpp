@@ -35,15 +35,12 @@ std::string File::getName() const
 //Get info about the file
 std::string File::getFileInfo() const
 {
-	std::string tempName = _name;
-	if (_name.length() > 16)
-		tempName = _name.substr(0, 16);
-	std::string spaces = "    ";
-	for (unsigned int i = 0; i < 16 - tempName.length(); i++)
-	{
-		spaces += " ";
-	}
-	return "F:  " + tempName + spaces + std::to_string(_realSize) + "\t" + 
+	std::string tempName = ".";
+	tempName.replace(0, 1, 24, ' ');
+	int l = int(fminf(float(_name.length()), 24.f));
+	tempName.replace(0, l, _name.substr(0, l));
+
+	return tempName + std::to_string(_realSize) + "\t" + 
 		std::to_string(_blocks.size() * 512) + "\n";
 }
 

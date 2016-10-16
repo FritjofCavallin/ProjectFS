@@ -35,8 +35,7 @@ public:
 	//ls
 	std::string getDirectoryInfo(const std::string & path);
 	//create
-	std::string createFile(const std::string & path, const std::string & data,
-		const std::string & accessRights);
+	std::string createFile(const std::string & path, const std::string & data);
 	//cat
 	std::string getFileData(const std::string & path);
 	//createImage

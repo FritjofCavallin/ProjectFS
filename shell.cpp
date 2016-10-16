@@ -53,7 +53,7 @@ int main(void)
 				std::cout << "Enter file content below:\n";
 				std::string data = "";
 				getline(std::cin, data);
-				std::cout << fileSystem.createFile(commandArr[1], data, "0");
+				std::cout << fileSystem.createFile(commandArr[1], data);
 				break;
 			}
             case 4: // cat
