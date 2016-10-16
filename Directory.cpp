@@ -3,8 +3,7 @@
 //Default constructor
 Directory::Directory()
 {
-	_name = "ERROR!";
-	_parent = nullptr;
+	//Nothing
 }
 
 //Constructor

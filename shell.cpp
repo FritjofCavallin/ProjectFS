@@ -46,7 +46,7 @@ int main(void)
 				fileSystem.format();
                 break;
             case 2: // ls
-				std::cout << fileSystem.ls(commandArr[1]);
+				std::cout << fileSystem.getDirectoryInfo(commandArr[1]);
                 break;
             case 3: // create
 			{
@@ -131,21 +131,21 @@ std::string help() {
     std::string helpStr;
     helpStr += "OSD Disk Tool .oO Help Screen Oo.\n";
     helpStr += "-----------------------------------------------------------------------------------\n" ;
-    helpStr += "* quit:                             Quit OSD Disk Tool\n";  //Done
-    helpStr += "* format;                           Formats disk\n";  //Done
-    helpStr += "* ls     <path>:                    Lists contents of <path>.\n";  //Done
-    helpStr += "* create <path>:                    Creates a file and stores contents in <path>\n";	//Done
-    helpStr += "* cat    <path>:                    Dumps contents of <file>.\n";	//Done
-    helpStr += "* createImage  <real-file>:         Saves disk to <real-file>\n";	//Done
-    helpStr += "* restoreImage <real-file>:         Reads <real-file> onto disk\n";	//Done
-    helpStr += "* rm     <file>:                    Removes <file>\n";	//Done
-    helpStr += "* cp     <source> <destination>:    Copy <source> to <destination>\n";	//Done
-    helpStr += "* append <source> <destination>:    Appends contents of <source> to <destination>\n"; //Done
-    helpStr += "* mv     <old-file> <new-file>:     Renames <old-file> to <new-file>\n";	//Done
-    helpStr += "* mkdir  <directory>:               Creates a new directory called <directory>\n";  //Done
-    helpStr += "* cd     <directory>:               Changes current working directory to <directory>\n";  //Done
-    helpStr += "* pwd:                              Get current working directory\n";  //Done
-	helpStr += "* chmod:							Change <access rights> for <file>\n"; //Done
-    helpStr += "* help:                             Prints this help screen\n";  //Done
+    helpStr += "* quit:                             Quit OSD Disk Tool\n";
+    helpStr += "* format;                           Formats disk\n";
+    helpStr += "* ls     <path>:                    Lists contents of <path>.\n";  
+    helpStr += "* create <path>:                    Creates a file and stores contents in <path>\n";	
+    helpStr += "* cat    <path>:                    Dumps contents of <file>.\n";	
+    helpStr += "* createImage  <real-file>:         Saves disk to <real-file>\n";	
+    helpStr += "* restoreImage <real-file>:         Reads <real-file> onto disk\n";	
+    helpStr += "* rm     <file>:                    Removes <file>\n";	
+    helpStr += "* cp     <source> <destination>:    Copy <source> to <destination>\n";	
+    helpStr += "* append <source> <destination>:    Appends contents of <source> to <destination>\n"; 
+    helpStr += "* mv     <old-file> <new-file>:     Renames <old-file> to <new-file>\n";	
+    helpStr += "* mkdir  <directory>:               Creates a new directory called <directory>\n";  
+    helpStr += "* cd     <directory>:               Changes current working directory to <directory>\n";  
+    helpStr += "* pwd:                              Get current working directory\n";  
+	helpStr += "* chmod:							Change <access rights> for <file>\n"; 
+    helpStr += "* help:                             Prints this help screen\n";  
     return helpStr;
 }

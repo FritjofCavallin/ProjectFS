@@ -1,41 +1,6 @@
 #include "filesystem.h"
 #include <string>
 
-//Default constructor
-FileSystem::FileSystem()
-{
-	_memBlockDevice = MemBlockDevice();
-	_root = new Directory("root", nullptr);
-	_currentDir = _root;
-
-	for (unsigned int i = 0; i < 250; i++)
-	{
-		_freeBlocks.push_back(i);
-	}
-}
-
-//Destructor
-FileSystem::~FileSystem()
-{
-	delete _root;
-}
-
-//Resets the whole system
-void FileSystem::format()
-{
-	delete _root;
-	_memBlockDevice = MemBlockDevice();
-	_root = new Directory("root", nullptr);
-	_currentDir = _root;
-
-	_freeBlocks.clear();
-	for (unsigned int i = 0; i < 250; i++)
-	{
-		_freeBlocks.push_back(i);
-	}
-
-}
-
 //Extracts and returns the last part of a path, aka the name, and removes it from the referenced path
 std::string FileSystem::extractNameFromPath(std::string & path)
 {
@@ -68,23 +33,49 @@ Directory * FileSystem::startPathProcessing(const std::string & path)
 		return _root->processPath(p);
 }
 
-//Initializes storing virtual disk on real storage
-std::string FileSystem::createImage(const std::string & path) //real path
+//Write data to file
+std::string FileSystem::writeToFile(Directory* dir, const std::string & name, const std::string & data
+	, const unsigned int accessRights)
 {
-	std::string output;
-	std::ofstream saveFile;
-	saveFile.open(path);
-	if (saveFile.is_open())
+	if ((data.length() + 511) / 512 < _freeBlocks.size())  //Check if there is enough space in our unused memory
 	{
-		output = saveToFile(*_root, saveFile);
-		saveFile.close();
+		int index = dir->newFileIndex(name);  //Asks the directory that will be used what index the file will get (in the files-array the directory has). 
+		if (index == -1)
+			return "Name already used";
+		else
+		{
+			std::vector<Block*> blocks;
+			std::vector<int> usedIndexes;
+			unsigned int i = 0;
+			//Takes a full block (512 bytes) from 'data' at a time and puts it in a block if it can (/has to).
+			while (i + 512 < data.length())
+			{
+				_memBlockDevice.writeBlock(_freeBlocks.front(), data.substr(i, 512));  //Puts 512 bytes of data in a free block.
+				blocks.push_back(&_memBlockDevice[_freeBlocks.front()]);  //Stores a pointer to the block that was just written to.
+				usedIndexes.push_back(_freeBlocks.front());  //Stores the index of the block that was just used.
+				_freeBlocks.pop_front();  //Deletes the index just used from the list of usable indexes.
+				i += 512;
+			}
+			int left = data.length() - i;
+			if (left != 0)  //Checks if there is any data left to store.
+			{
+				std::string last = ".";
+				last.replace(0, 1, 512, '*');  //Creates a 512 byte long string full of '*'
+				last.replace(0, left, data.substr(i, left));  //Relpaces as much as needed with actual data. The string is still 512 bytes long!
+															  //Same as in the while-loop above...
+				_memBlockDevice.writeBlock(_freeBlocks.front(), last);
+				blocks.push_back(&_memBlockDevice[_freeBlocks.front()]);
+				usedIndexes.push_back(_freeBlocks.front());
+				_freeBlocks.pop_front();
+			}
+			dir->addFile(index, name, accessRights, i + left, blocks, usedIndexes);  //Sends all the data to the directory which in turn actually creates and stores a file-object.
+			return "File successfully written.\n";
+		}
 	}
 	else
 	{
-		output = "Real file active or invalid path name.\n";
+		return "Not enough storage left.\n";
 	}
-
-	return output;
 }
 
 //Stores virtual disk on hard drive
@@ -100,7 +91,7 @@ std::string FileSystem::saveToFile(Directory & directory, std::ofstream & saveFi
 		if (dir != nullptr) //Checks whether the path exists
 			saveToFile(*directory.getDirectory(i), saveFile);
 		else
-		
+
 			output = "Directory " + std::to_string(i) + " in " + directory.getName() + " is non-existant.\n";
 	}
 	for (int i = 0; i < children[1]; i++)
@@ -114,30 +105,6 @@ std::string FileSystem::saveToFile(Directory & directory, std::ofstream & saveFi
 
 	}
 	output = "Save successful.\n";
-	return output;
-}
-
-//Initializes restoring virtual disk from real storage
-std::string FileSystem::restoreImage(const std::string & path)
-{
-	std::string output;
-	char read = 'a';
-	FILE* loadFile = NULL;
-	errno_t error;
-	if (error = fopen_s(&loadFile, path.c_str(), "r") == 0) //Checks whether the (real) file exists
-	{
-		while (read != '\n')
-		{
-			fscanf(loadFile, "%c", &read);
-		}
-		output = loadFromFile(*_root, loadFile);
-		fclose(loadFile);
-	}
-	else
-	{
-		output = "Invalid path name.\n";
-	}
-
 	return output;
 }
 
@@ -155,7 +122,7 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 			fscanf(loadFile, "%c", &read);
 			if (read != '\n')
 			{
-				children[i]+= read;
+				children[i] += read;
 			}
 			else
 				break;
@@ -228,6 +195,61 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 	return "Load successful.\n";
 }
 
+
+//-------Public stuff-----
+
+//Default constructor
+FileSystem::FileSystem()
+{
+	_memBlockDevice = MemBlockDevice();
+	_root = new Directory("root", nullptr);
+	_currentDir = _root;
+
+	for (unsigned int i = 0; i < 250; i++)
+	{
+		_freeBlocks.push_back(i);
+	}
+}
+
+//Destructor
+FileSystem::~FileSystem()
+{
+	delete _root;
+}
+
+//Resets the whole system
+void FileSystem::format()
+{
+	delete _root;
+	_memBlockDevice = MemBlockDevice();
+	_root = new Directory("root", nullptr);
+	_currentDir = _root;
+
+	_freeBlocks.clear();
+	for (unsigned int i = 0; i < 250; i++)
+	{
+		_freeBlocks.push_back(i);
+	}
+
+}
+
+//Lists all directories and files in the current directory
+std::string FileSystem::getDirectoryInfo(const std::string & path)
+{
+	if (path != "") //Checks whether the path refers to current directory
+	{
+		Directory* dir = startPathProcessing(path);
+		if (dir != nullptr) //Checks whether the path exists
+			return dir->getInfoString();
+		else
+			return "Invalid path.\n";
+	}
+	else
+	{
+		return _currentDir->getInfoString();
+	}
+}
+
 //Create a new file
 std::string FileSystem::createFile(const std::string & path, const std::string & data, const std::string & accessRights)
 {
@@ -236,8 +258,7 @@ std::string FileSystem::createFile(const std::string & path, const std::string &
 	Directory* dir = startPathProcessing(p);
 	if (dir != nullptr) //Checks whether the path exists
 	{
-		writeToFile(dir, name, data, std::stoi(accessRights));
-		return "Creation successful.\n";
+		return writeToFile(dir, name, data, std::stoi(accessRights));
 	}
 	else
 		return "Invalid path.\n";
@@ -272,125 +293,68 @@ std::string FileSystem::getFileData(const std::string & path)
 		return "Invalid path.\n";
 }
 
-//Lists all directories and files in the current directory
-std::string FileSystem::ls(const std::string & path)
+//Initializes storing virtual disk on real storage
+std::string FileSystem::createImage(const std::string & path) //real path
 {
-	if (path != "") //Checks whether the path refers to current directory
+	std::string output;
+	std::ofstream saveFile;
+	saveFile.open(path);
+	if (saveFile.is_open())
 	{
-		Directory* dir = startPathProcessing(path);
-		if (dir != nullptr) //Checks whether the path exists
-			return dir->getInfoString();
-		else
-			return "Invalid path.\n";
+		output = saveToFile(*_root, saveFile);
+		saveFile.close();
 	}
 	else
 	{
-		return _currentDir->getInfoString();
+		output = "Real file active or invalid path name.\n";
 	}
+
+	return output;
 }
 
-//Write data to file
-std::string FileSystem::writeToFile(Directory* dir, const std::string & name, const std::string & data
-	, const unsigned int accessRights)
+//Initializes restoring virtual disk from real storage
+std::string FileSystem::restoreImage(const std::string & path)
 {
-	if ((data.length() + 511) / 512 < _freeBlocks.size())  //Check if there is enough space in our unused memory
+	std::string output;
+	char read = 'a';
+	FILE* loadFile = NULL;
+	errno_t error;
+	if (error = fopen_s(&loadFile, path.c_str(), "r") == 0) //Checks whether the (real) file exists
 	{
-		int index = dir->newFileIndex(name);  //Asks the directory that will be used what index the file will get (in the files-array the directory has). 
-		if (index == -1)
-			return "Name already used";
-		else
+		while (read != '\n')
 		{
-			std::vector<Block*> blocks;
-			std::vector<int> usedIndexes;
-			unsigned int i = 0;
-			//Takes a full block (512 bytes) from 'data' at a time and puts it in a block if it can (/has to).
-			while (i + 512 < data.length())
-			{
-				_memBlockDevice.writeBlock(_freeBlocks.front(), data.substr(i, 512));  //Puts 512 bytes of data in a free block.
-				blocks.push_back(&_memBlockDevice[_freeBlocks.front()]);  //Stores a pointer to the block that was just written to.
-				usedIndexes.push_back(_freeBlocks.front());  //Stores the index of the block that was just used.
-				_freeBlocks.pop_front();  //Deletes the index just used from the list of usable indexes.
-				i += 512;
-			}
-			int left = data.length() - i;
-			if (left != 0)  //Checks if there is any data left to store.
-			{
-				std::string last = ".";
-				last.replace(0, 1, 512, '*');  //Creates a 512 byte long string full of '*'
-				last.replace(0, left, data.substr(i, left));  //Relpaces as much as needed with actual data. The string is still 512 bytes long!
-				//Same as in the while-loop above...
-				_memBlockDevice.writeBlock(_freeBlocks.front(), last);
-				blocks.push_back(&_memBlockDevice[_freeBlocks.front()]);
-				usedIndexes.push_back(_freeBlocks.front());
-				_freeBlocks.pop_front();
-			}
-			dir->addFile(index, name, accessRights, i + left, blocks, usedIndexes);  //Sends all the data to the directory which in turn actually creates and stores a file-object.
-			return "File successfully written.\n";
+			fscanf(loadFile, "%c", &read);
 		}
+		output = loadFromFile(*_root, loadFile);
+		fclose(loadFile);
 	}
 	else
 	{
-		return "Not enough storage left.\n";
+		output = "Invalid path name.\n";
 	}
+
+	return output;
 }
 
-//Create a directory
-std::string FileSystem::makeDir(const std::string & path)
+//Removes a file from the system
+std::string FileSystem::removeFile(const std::string & path)
 {
 	std::string p = path;
 	std::string name = extractNameFromPath(p);
 	Directory* dir = startPathProcessing(p);
-	if (dir != nullptr) //Checks whether the path exists
-		return dir->addDirectory(name);
-	else
-		return "Invalid path.\n";
-}
-
-//Sets new working directory
-std::string FileSystem::goToFolder(const std::string & path, std::string & fullPath)
-{
-	Directory* dir = startPathProcessing(path);
-	if (dir != nullptr) //Checks whether the path exists
+	if (dir != nullptr) //Checks whether the path to the file exists
 	{
-		_currentDir = dir;
-		fullPath = getFullPath();
-		return "";
-	}
-	else
-		return "Invalid path.\n";
-}
-
-//Get the full file path from root to current working directory
-std::string FileSystem::getFullPath()
-{
-	return "/" + _currentDir->getPath() + "/";
-}
-
-//Rename and/or move a file. mv command in shell
-std::string FileSystem::renameFile(const std::string & prevName, const std::string & newName)
-{
-	std::string output, _prevName, _newName, p;
-	p = prevName;
-	_prevName = extractNameFromPath(p);
-	Directory* prevDir = startPathProcessing(p), *newDir;
-	File* file = prevDir->getFile(_prevName);
-	if (file->getAccessRights() == 0 || file->getAccessRights() == 2) //Checks access rights for reading in file
-	{
-		p = newName;
-		_newName = extractNameFromPath(p);
-		newDir = startPathProcessing(p);
-		if (prevDir == newDir) //Checks whether the file is to be renamed only
-			output = prevDir->renameFile(_prevName, _newName);
-		else
+		std::vector<int> usedIndexes;
+		if (dir->removeFile(name, usedIndexes)) //Checks whether the file exists
 		{
-			copyFile(prevName, newName); 
-			std::vector<int> usedIndexes;
-			prevDir->removeFile(_prevName, usedIndexes);
 			_freeBlocks.insert(std::end(_freeBlocks), std::begin(usedIndexes), std::end(usedIndexes));
-			output = "File successfully moved.\n";
+			return "Removal successful.\n";
 		}
+		else
+			return "Invalid name.\n";
 	}
-	return output;
+	else
+		return "Invalid path.\n";
 }
 
 //Copies a file
@@ -434,7 +398,7 @@ std::string FileSystem::appendFile(const std::string & path1, const std::string 
 {
 	std::string output, data, data1, data2, fileName, appendFileName;
 	std::string p = path1;
-	std::string fileName = extractNameFromPath(p);
+	fileName = extractNameFromPath(p);
 	Directory* dir = startPathProcessing(p);
 	if (dir != nullptr) //Checks whether the path to file 1 exists
 	{
@@ -447,23 +411,28 @@ std::string FileSystem::appendFile(const std::string & path1, const std::string 
 				p = path2;
 				appendFileName = extractNameFromPath(p);
 				dir = startPathProcessing(p);
-				if ((file = dir->getFile(appendFileName)) != nullptr) //Checks whether file 2 exists
+				if (dir != nullptr)
 				{
-					if (file->getAccessRights() == 0 || file->getAccessRights() == 2) //Checks access rights for writing in file 2
+					if ((file = dir->getFile(appendFileName)) != nullptr) //Checks whether file 2 exists
 					{
-						dir->getFileData(appendFileName, data2);
-						std::vector<int> usedIndexes;
-						dir->removeFile(appendFileName, usedIndexes);
-						_freeBlocks.insert(std::end(_freeBlocks), std::begin(usedIndexes), std::end(usedIndexes));
-						data = data1 + data2;
-						writeToFile(dir, appendFileName, data, file->getAccessRights());
-						output = "File successfully appended.\n";
+						if (file->getAccessRights() == 0 || file->getAccessRights() == 2) //Checks access rights for writing in file 2
+						{
+							dir->getFileData(appendFileName, data2);
+							std::vector<int> usedIndexes;
+							dir->removeFile(appendFileName, usedIndexes);
+							_freeBlocks.insert(std::end(_freeBlocks), std::begin(usedIndexes), std::end(usedIndexes));
+							data = data1 + data2;
+							writeToFile(dir, appendFileName, data, file->getAccessRights());
+							output = "File successfully appended.\n";
+						}
+						else
+							output = "Access violation writing in '" + appendFileName + "'.\n";
 					}
 					else
-						output = "Access violation writing in '" + appendFileName + "'.\n";
+						output = "Invalid file 2 name.\n";
 				}
 				else
-					output = "Invalid file 2 name or path.\n";
+					output = "Invalid '" + appendFileName + "' path.\n";
 			}
 			else
 				output = "Access violation reading '" + fileName + "'.\n";
@@ -477,25 +446,63 @@ std::string FileSystem::appendFile(const std::string & path1, const std::string 
 	return output;
 }
 
-//Removes a file from the system
-std::string FileSystem::removeFile(const std::string & path)
+//Rename and/or move a file. mv command in shell
+std::string FileSystem::renameFile(const std::string & path1, const std::string & path2)
+{
+	std::string output, prevName, newName, p;
+	p = path1;
+	prevName = extractNameFromPath(p);
+	Directory* prevDir = startPathProcessing(p), *newDir;
+	File* file = prevDir->getFile(prevName);
+	if (file->getAccessRights() == 0 || file->getAccessRights() == 2) //Checks access rights for reading in file
+	{
+		p = path2;
+		newName = extractNameFromPath(p);
+		newDir = startPathProcessing(p);
+		if (prevDir == newDir) //Checks whether the file is to be renamed only
+			output = prevDir->renameFile(prevName, newName);
+		else
+		{
+			copyFile(path1, path2);
+			std::vector<int> usedIndexes;
+			prevDir->removeFile(prevName, usedIndexes);
+			_freeBlocks.insert(std::end(_freeBlocks), std::begin(usedIndexes), std::end(usedIndexes));
+			output = "File successfully moved.\n";
+		}
+	}
+	return output;
+}
+
+//Create a directory
+std::string FileSystem::makeDir(const std::string & path)
 {
 	std::string p = path;
 	std::string name = extractNameFromPath(p);
 	Directory* dir = startPathProcessing(p);
-	if (dir != nullptr) //Checks whether the path to the file exists
+	if (dir != nullptr) //Checks whether the path exists
+		return dir->addDirectory(name);
+	else
+		return "Invalid path.\n";
+}
+
+//Sets new working directory
+std::string FileSystem::goToFolder(const std::string & path, std::string & fullPath)
+{
+	Directory* dir = startPathProcessing(path);
+	if (dir != nullptr) //Checks whether the path exists
 	{
-		std::vector<int> usedIndexes;
-		if (dir->removeFile(name, usedIndexes)) //Checks whether the file exists
-		{
-			_freeBlocks.insert(std::end(_freeBlocks), std::begin(usedIndexes), std::end(usedIndexes));
-			return "Removal successful.\n";
-		}
-		else
-			return "Invalid name.\n";
+		_currentDir = dir;
+		fullPath = getFullPath();
+		return "";
 	}
 	else
 		return "Invalid path.\n";
+}
+
+//Get the full file path from root to current working directory
+std::string FileSystem::getFullPath()
+{
+	return "/" + _currentDir->getPath() + "/";
 }
 
 //Changes acces rights for a file

@@ -13,8 +13,9 @@ private:
 	std::string					_name;
 	Directory*					_parent;
 
-public:
 	Directory();
+
+public:
 	Directory(const std::string & name, Directory* parent);
 	virtual ~Directory();
 	std::string getName();
