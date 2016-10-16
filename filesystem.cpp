@@ -400,7 +400,7 @@ std::string FileSystem::appendFile(const std::string & path1, const std::string 
 	std::string p = path1;
 	fileName = extractNameFromPath(p);
 	Directory* dir = startPathProcessing(p);
-	if (dir != nullptr) //Checks whether the path to file 1 exists
+	if (dir != nullptr) //Checks whether path 1 exists
 	{
 		File* file = _currentDir->getFile(p);
 		if (file != nullptr) //Checks whether file 1 exists
@@ -411,11 +411,11 @@ std::string FileSystem::appendFile(const std::string & path1, const std::string 
 				p = path2;
 				appendFileName = extractNameFromPath(p);
 				dir = startPathProcessing(p);
-				if (dir != nullptr)
+				if (dir != nullptr) //Checks whether path 2 exists
 				{
 					if ((file = dir->getFile(appendFileName)) != nullptr) //Checks whether file 2 exists
 					{
-						if (file->getAccessRights() == 0 || file->getAccessRights() == 2) //Checks access rights for writing in file 2
+						if (file->getAccessRights() == 0) //Checks access rights for writing in file 2
 						{
 							dir->getFileData(appendFileName, data2);
 							std::vector<int> usedIndexes;
@@ -453,23 +453,36 @@ std::string FileSystem::renameFile(const std::string & path1, const std::string 
 	p = path1;
 	prevName = extractNameFromPath(p);
 	Directory* prevDir = startPathProcessing(p), *newDir;
-	File* file = prevDir->getFile(prevName);
-	if (file->getAccessRights() == 0 || file->getAccessRights() == 2) //Checks access rights for reading in file
+	if (prevDir != nullptr) //Checks whether path 1 exists
 	{
-		p = path2;
-		newName = extractNameFromPath(p);
-		newDir = startPathProcessing(p);
-		if (prevDir == newDir) //Checks whether the file is to be renamed only
-			output = prevDir->renameFile(prevName, newName);
-		else
+		File* file = prevDir->getFile(prevName);
+		if (file != nullptr)
 		{
-			copyFile(path1, path2);
-			std::vector<int> usedIndexes;
-			prevDir->removeFile(prevName, usedIndexes);
-			_freeBlocks.insert(std::end(_freeBlocks), std::begin(usedIndexes), std::end(usedIndexes));
-			output = "File successfully moved.\n";
+			if (file->getAccessRights() == 0) //Checks access rights for writing in file
+			{
+				p = path2;
+				newName = extractNameFromPath(p);
+				newDir = startPathProcessing(p);
+				if (prevDir == newDir) //Checks whether the file is to be renamed only
+					output = prevDir->renameFile(prevName, newName);
+				else
+				{
+					copyFile(path1, path2);
+					std::vector<int> usedIndexes;
+					prevDir->removeFile(prevName, usedIndexes);
+					_freeBlocks.insert(std::end(_freeBlocks), std::begin(usedIndexes), std::end(usedIndexes));
+					output = "File successfully moved.\n";
+				}
+			}
+			else
+				output = "Access violation writing in'" + prevName + ".\n";
 		}
+		else
+			output = "Invalid file 1 name.\n";
 	}
+	else
+		output = "Invalid '" + prevName + "' path.\n";
+
 	return output;
 }
 
