@@ -31,7 +31,7 @@ public:
     FileSystem();
     ~FileSystem();
 	//format
-	void format();
+	std::string format();
 	//ls
 	std::string getDirectoryInfo(const std::string & path);
 	//create

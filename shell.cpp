@@ -43,7 +43,7 @@ int main(void)
                 std::cout << "Exiting\n";
                 break;
             case 1: // format
-				fileSystem.format();
+				std::cout << fileSystem.format();
                 break;
             case 2: // ls
 				std::cout << fileSystem.getDirectoryInfo(commandArr[1]);

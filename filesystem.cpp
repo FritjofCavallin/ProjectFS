@@ -119,7 +119,7 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 	{
 		while (1)
 		{
-			fscanf(loadFile, "%c", &read);
+			fscanf_s(loadFile, "%c", &read, 1);
 			if (read != '\n')
 			{
 				children[i] += read;
@@ -135,7 +135,7 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 		//reads and stores directory name
 		while (1)
 		{
-			fscanf(loadFile, "%c", &read);
+			fscanf_s(loadFile, "%c", &read, 1);
 			if (read != '\n')
 				name += read;
 			else
@@ -152,7 +152,7 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 		//reads and stores file name
 		while (1)
 		{
-			fscanf(loadFile, "%c", &read);
+			fscanf_s(loadFile, "%c", &read, 1);
 			if (read != '\n')
 				name += read;
 			else
@@ -162,7 +162,7 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 		//reads and stores file size
 		while (1)
 		{
-			fscanf(loadFile, "%c", &read);
+			fscanf_s(loadFile, "%c", &read, 1);
 			if (read != '\n')
 			{
 				size += read;
@@ -172,7 +172,7 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 		}
 		while (1)
 		{
-			fscanf(loadFile, "%c", &read);
+			fscanf_s(loadFile, "%c", &read, 1);
 			if (read != '\n')
 			{
 				accessRights += read;
@@ -184,10 +184,10 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 		//reads and stores file data
 		for (int j = 0; j < std::stoi(size); j++)
 		{
-			fscanf(loadFile, "%c", &read);
+			fscanf_s(loadFile, "%c", &read, 1);
 			data += read;
 		}
-		fscanf(loadFile, "%c", &read); //reads the line feed after the data
+		fscanf_s(loadFile, "%c", &read, 1); //reads the line feed after the data
 		writeToFile(&directory, name, data, std::stoi(accessRights));
 		name = "";
 	}
@@ -218,7 +218,7 @@ FileSystem::~FileSystem()
 }
 
 //Resets the whole system
-void FileSystem::format()
+std::string FileSystem::format()
 {
 	delete _root;
 	_memBlockDevice = MemBlockDevice();
@@ -230,7 +230,7 @@ void FileSystem::format()
 	{
 		_freeBlocks.push_back(i);
 	}
-
+	return "Format successful.\n";
 }
 
 //Lists all directories and files in the current directory
@@ -323,7 +323,7 @@ std::string FileSystem::restoreImage(const std::string & path)
 	{
 		while (read != '\n')
 		{
-			fscanf(loadFile, "%c", &read);
+			fscanf_s(loadFile, "%c", &read, 1);
 		}
 		output = loadFromFile(*_root, loadFile);
 		fclose(loadFile);
