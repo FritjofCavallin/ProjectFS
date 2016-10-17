@@ -1,4 +1,5 @@
-#pragma once
+#ifndef FILE_H
+#define FILE_H
 
 #include <vector>
 
@@ -27,3 +28,4 @@ public:
 	void setAccessRights(const unsigned int & accessRights);
 };
 
+#endif

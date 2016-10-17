@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DIRECTORY_H
+#define DIRECTORY_H
 
 #include <vector>
 #include <iostream>
@@ -37,3 +38,4 @@ public:
 	bool removeFile(const std::string & name, std::vector<int>& usedIndexes);
 };
 
+#endif

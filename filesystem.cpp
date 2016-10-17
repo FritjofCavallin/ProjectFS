@@ -1,5 +1,8 @@
 #include "filesystem.h"
 #include <string>
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
 
 //Extracts and returns the last part of a path, aka the name, and removes it from the referenced path
 std::string FileSystem::extractNameFromPath(std::string & path)
@@ -27,10 +30,10 @@ Directory * FileSystem::startPathProcessing(const std::string & path)
 	if (p.length() > 3 && p[p.length() - 1] == '/')
 		p = p.substr(0, p.length() - 1);
 
-	if (p[0] == '.')  //Relative path
-		return _currentDir->processPath(p);
+	if (p[0] == '/')  //Relative path
+		return _root->processPath(p.substr(1));
 	else  //Absolute path
-		return _root->processPath(p);
+		return _currentDir->processPath(p);
 }
 
 //Write data to file
@@ -119,7 +122,7 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 	{
 		while (1)
 		{
-			fscanf_s(loadFile, "%c", &read, 1);
+			fscanf(loadFile, "%c", &read);
 			if (read != '\n')
 			{
 				children[i] += read;
@@ -135,7 +138,7 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 		//reads and stores directory name
 		while (1)
 		{
-			fscanf_s(loadFile, "%c", &read, 1);
+			fscanf(loadFile, "%c", &read);
 			if (read != '\n')
 				name += read;
 			else
@@ -152,7 +155,7 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 		//reads and stores file name
 		while (1)
 		{
-			fscanf_s(loadFile, "%c", &read, 1);
+			fscanf(loadFile, "%c", &read);
 			if (read != '\n')
 				name += read;
 			else
@@ -162,7 +165,7 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 		//reads and stores file size
 		while (1)
 		{
-			fscanf_s(loadFile, "%c", &read, 1);
+			fscanf(loadFile, "%c", &read);
 			if (read != '\n')
 			{
 				size += read;
@@ -172,7 +175,7 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 		}
 		while (1)
 		{
-			fscanf_s(loadFile, "%c", &read, 1);
+			fscanf(loadFile, "%c", &read);
 			if (read != '\n')
 			{
 				accessRights += read;
@@ -184,10 +187,10 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 		//reads and stores file data
 		for (int j = 0; j < std::stoi(size); j++)
 		{
-			fscanf_s(loadFile, "%c", &read, 1);
+			fscanf(loadFile, "%c", &read);
 			data += read;
 		}
-		fscanf_s(loadFile, "%c", &read, 1); //reads the line feed after the data
+		fscanf(loadFile, "%c", &read); //reads the line feed after the data
 		writeToFile(&directory, name, data, std::stoi(accessRights));
 		name = "";
 	}
@@ -319,12 +322,11 @@ std::string FileSystem::restoreImage(const std::string & path)
 	std::string output;
 	char read = 'a';
 	FILE* loadFile = NULL;
-	errno_t error;
-	if (error = fopen_s(&loadFile, path.c_str(), "r") == 0) //Checks whether the (real) file exists
+	if ((loadFile = fopen(path.c_str(), "r")) != NULL)
 	{
 		while (read != '\n')
 		{
-			fscanf_s(loadFile, "%c", &read, 1);
+			fscanf(loadFile, "%c", &read);
 		}
 		output = loadFromFile(*_root, loadFile);
 		fclose(loadFile);
@@ -368,24 +370,27 @@ std::string FileSystem::copyFile(const std::string & path1, const std::string & 
 	Directory* dir = startPathProcessing(p);
 	if ((file = dir->getFile(fileName)) != nullptr) //Checks whether the file exists
 	{
-		dir->getFileData(fileName, data);
-		p = path2;
-		fileName = extractNameFromPath(p);
-		if (p != "") //Checks whether the file is to be copied to the same path
+		if (file->getAccessRights() < 2) //Checks access rights for reading the file
 		{
-			dir = startPathProcessing(p);
-			if (dir != nullptr) //Checks whether the path to the file exists
+			dir->getFileData(fileName, data);
+			p = path2;
+			fileName = extractNameFromPath(p);
+			if (p != "") //Checks whether the file is to be copied to the same path
 			{
-				writeToFile(dir, fileName, data, file->getAccessRights());
-				output = "File copy successful.\n";
+				dir = startPathProcessing(p);
+				if (dir != nullptr) //Checks whether the path to the file exists
+				{
+					writeToFile(dir, fileName, data, file->getAccessRights());
+					output = "File copy successful.\n";
+				}
+				else
+					output = "Invalid path name.\n";
 			}
 			else
-				output = "Invalid path name.\n";
-		}
-		else
-		{
-			writeToFile(_currentDir, fileName, data, file->getAccessRights());
-			output = "File copy successful.\n";
+			{
+				writeToFile(_currentDir, fileName, data, file->getAccessRights());
+				output = "File copy successful.\n";
+			}
 		}
 	}
 	else
@@ -397,14 +402,13 @@ std::string FileSystem::copyFile(const std::string & path1, const std::string & 
 //Adds the content of one file to another
 std::string FileSystem::appendFile(const std::string & path1, const std::string & path2)
 {
-	std::string output, data, data1, data2, fileName, appendFileName;
-	std::string p = path1;
+	std::string output, data, data1, data2, fileName, appendFileName, p = path1;
+	File* file;
 	fileName = extractNameFromPath(p);
 	Directory* dir = startPathProcessing(p);
 	if (dir != nullptr) //Checks whether path 1 exists
 	{
-		File* file = _currentDir->getFile(p);
-		if (file != nullptr) //Checks whether file 1 exists
+		if ((file = dir->getFile(fileName)) != nullptr) //Checks whether file 1 exists
 		{
 			if (file->getAccessRights() < 2) //Checks access rights for reading file 1
 			{
@@ -416,7 +420,7 @@ std::string FileSystem::appendFile(const std::string & path1, const std::string 
 				{
 					if ((file = dir->getFile(appendFileName)) != nullptr) //Checks whether file 2 exists
 					{
-						if (file->getAccessRights() == 0) //Checks access rights for writing in file 2
+						if (file->getAccessRights() == 0 || file->getAccessRights() == 2) //Checks access rights for writing in file 2
 						{
 							dir->getFileData(appendFileName, data2);
 							std::vector<int> usedIndexes;
@@ -459,7 +463,7 @@ std::string FileSystem::renameFile(const std::string & path1, const std::string 
 		File* file = prevDir->getFile(prevName);
 		if (file != nullptr)
 		{
-			if (file->getAccessRights() == 0) //Checks access rights for writing in file
+			if (file->getAccessRights() == 0 || file->getAccessRights() == 2) //Checks access rights for writing in file
 			{
 				p = path2;
 				newName = extractNameFromPath(p);
@@ -503,13 +507,7 @@ std::string FileSystem::makeDir(const std::string & path)
 std::string FileSystem::goToFolder(const std::string & path, std::string & fullPath)
 {
 	Directory* dir = startPathProcessing(path);
-	if (path == "root")
-	{
-		_currentDir = _root;
-		fullPath = "/root/";
-		return "";
-	}
-	else if (dir != nullptr) //Checks whether the path exists
+	if (dir != nullptr) //Checks whether the path exists
 	{
 		_currentDir = dir;
 		fullPath = getFullPath();
