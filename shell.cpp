@@ -1,6 +1,5 @@
 #include <iostream>
 #include <sstream>
-#include <crtdbg.h>
 
 #include "filesystem.h"
 
@@ -19,12 +18,10 @@ std::string help();
 
 int main(void)
 {
-	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-
 	FileSystem fileSystem;
 	std::string userCommand, commandArr[MAXCOMMANDS];
 	std::string user = "user@DV1492";    // Change this if you want another user to be displayed
-	std::string currentDir = "/root/";    // current directory, used for output
+	std::string currentDir = "/";    // current directory, used for output
 
     bool bRun = true;
 

@@ -520,7 +520,7 @@ std::string FileSystem::goToFolder(const std::string & path, std::string & fullP
 //Get the full file path from root to current working directory
 std::string FileSystem::getFullPath()
 {
-	return "/" + _currentDir->getPath() + "/";
+	return _currentDir->getPath() + "/";
 }
 
 //Changes acces rights for a file

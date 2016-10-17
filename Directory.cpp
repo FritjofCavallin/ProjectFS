@@ -71,7 +71,7 @@ std::string Directory::getInfoString() const
 std::string Directory::getPath() const
 {
 	if (_parent == nullptr)
-		return _name;
+		return "";
 	else
 		return _parent->getPath() + "/" + _name;
 }
