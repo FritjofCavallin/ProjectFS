@@ -8,12 +8,11 @@ File::File()
 }
 
 //Constructor
-File::File(const std::string & fileName, int accessRights, int realSize, const std::vector<Block*> & blocks, const std::vector<int> & usedIndexes)
+File::File(const std::string & fileName, int accessRights, int realSize, const std::vector<Block*> & blocks)
 {
 	_name = fileName;
 	_realSize = realSize;
 	_accessRights = accessRights;
-	_usedIndexes = usedIndexes;
 	for (unsigned int i = 0; i < blocks.size(); i++)
 	{
 		_blocks.push_back(blocks[i]);
@@ -62,6 +61,12 @@ int File::getAccessRights()
 	return _accessRights;
 }
 
+//Returns vec array of used indexes
+std::vector<Block*> File::getUsedIndexes() const
+{
+	return _blocks;
+}
+
 //Returns size of file
 int File::getSize() const
 {
@@ -78,10 +83,4 @@ void File::setName(const std::string & name)
 void File::setAccessRights(const unsigned int & accessRights)
 {
 	_accessRights = accessRights;
-}
-
-//Returns vec array of used indexes
-std::vector<int> File::getUsedIndexes() const
-{
-	return _usedIndexes;
 }

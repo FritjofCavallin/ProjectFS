@@ -34,8 +34,8 @@ public:
 	std::string addDirectory(const std::string & name);
 	std::string renameFile(const std::string & prevName, const std::string & newName);
 	void addFile(int index, const std::string & name, int accessRights, int size
-		, const std::vector<Block*> & blocks, const std::vector<int> & usedIndexes);
-	bool removeFile(const std::string & name, std::vector<int>& usedIndexes);
+		, const std::vector<Block*> & blocks);
+	bool removeFile(const std::string & name, std::vector<Block*>& usedIndexes);
 };
 
 #endif

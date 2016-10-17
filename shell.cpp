@@ -92,7 +92,7 @@ int main(void)
             default:
                 std::cout << "Unknown command: " << commandArr[0] << std::endl;
             }
-			for (unsigned int i = 0; i < nrOfCommands; i++)
+			for (int i = 0; i < nrOfCommands; i++)
 			{
 				commandArr[i] = "";
 			}

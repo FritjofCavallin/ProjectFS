@@ -13,7 +13,7 @@ private:
     MemBlockDevice			_memBlockDevice;
 	Directory*				_root;
 	Directory*				_currentDir;
-	std::list<int>			_freeBlocks;
+	std::list<Block*>		_freeBlocks;
 
 	//Extracts the name from a path, aka the last part
 	std::string extractNameFromPath(std::string & path);

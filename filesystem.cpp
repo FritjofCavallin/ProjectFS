@@ -48,14 +48,13 @@ std::string FileSystem::writeToFile(Directory* dir, const std::string & name, co
 		else
 		{
 			std::vector<Block*> blocks;
-			std::vector<int> usedIndexes;
 			unsigned int i = 0;
 			//Takes a full block (512 bytes) from 'data' at a time and puts it in a block if it can (/has to).
 			while (i + 512 < data.length())
 			{
-				_memBlockDevice.writeBlock(_freeBlocks.front(), data.substr(i, 512));  //Puts 512 bytes of data in a free block.
-				blocks.push_back(&_memBlockDevice[_freeBlocks.front()]);  //Stores a pointer to the block that was just written to.
-				usedIndexes.push_back(_freeBlocks.front());  //Stores the index of the block that was just used.
+				//_memBlockDevice.writeBlock(_freeBlocks.front()->, data.substr(i, 512));  //Puts 512 bytes of data in a free block.
+				_freeBlocks.front()->writeBlock(data.substr(i, 512));
+				blocks.push_back(_freeBlocks.front());  //Stores a pointer to the block that was just written to.
 				_freeBlocks.pop_front();  //Deletes the index just used from the list of usable indexes.
 				i += 512;
 			}
@@ -66,12 +65,12 @@ std::string FileSystem::writeToFile(Directory* dir, const std::string & name, co
 				last.replace(0, 1, 512, '*');  //Creates a 512 byte long string full of '*'
 				last.replace(0, left, data.substr(i, left));  //Relpaces as much as needed with actual data. The string is still 512 bytes long!
 															  //Same as in the while-loop above...
-				_memBlockDevice.writeBlock(_freeBlocks.front(), last);
-				blocks.push_back(&_memBlockDevice[_freeBlocks.front()]);
-				usedIndexes.push_back(_freeBlocks.front());
+				//_memBlockDevice.writeBlock(_freeBlocks.front(), last);
+				_freeBlocks.front()->writeBlock(last);
+				blocks.push_back(_freeBlocks.front());
 				_freeBlocks.pop_front();
 			}
-			dir->addFile(index, name, accessRights, i + left, blocks, usedIndexes);  //Sends all the data to the directory which in turn actually creates and stores a file-object.
+			dir->addFile(index, name, accessRights, i + left, blocks);  //Sends all the data to the directory which in turn actually creates and stores a file-object.
 			return "File successfully written.\n";
 		}
 	}
@@ -210,7 +209,7 @@ FileSystem::FileSystem()
 
 	for (unsigned int i = 0; i < 250; i++)
 	{
-		_freeBlocks.push_back(i);
+		_freeBlocks.push_back(&_memBlockDevice[i]);
 	}
 }
 
@@ -224,14 +223,14 @@ FileSystem::~FileSystem()
 std::string FileSystem::format()
 {
 	delete _root;
-	_memBlockDevice = MemBlockDevice();
+	_memBlockDevice.reset();
 	_root = new Directory("root", nullptr);
 	_currentDir = _root;
 
 	_freeBlocks.clear();
 	for (unsigned int i = 0; i < 250; i++)
 	{
-		_freeBlocks.push_back(i);
+		_freeBlocks.push_back(&_memBlockDevice[i]);
 	}
 	return "Format successful.\n";
 }
@@ -347,7 +346,7 @@ std::string FileSystem::removeFile(const std::string & path)
 	Directory* dir = startPathProcessing(p);
 	if (dir != nullptr) //Checks whether the path to the file exists
 	{
-		std::vector<int> usedIndexes;
+		std::vector<Block*> usedIndexes;
 		if (dir->removeFile(name, usedIndexes)) //Checks whether the file exists
 		{
 			_freeBlocks.insert(std::end(_freeBlocks), std::begin(usedIndexes), std::end(usedIndexes));
@@ -423,7 +422,7 @@ std::string FileSystem::appendFile(const std::string & path1, const std::string 
 						if (file->getAccessRights() == 0 || file->getAccessRights() == 2) //Checks access rights for writing in file 2
 						{
 							dir->getFileData(appendFileName, data2);
-							std::vector<int> usedIndexes;
+							std::vector<Block*> usedIndexes;
 							dir->removeFile(appendFileName, usedIndexes);
 							_freeBlocks.insert(std::end(_freeBlocks), std::begin(usedIndexes), std::end(usedIndexes));
 							data = data1 + data2;
@@ -473,7 +472,7 @@ std::string FileSystem::renameFile(const std::string & path1, const std::string 
 				else
 				{
 					copyFile(path1, path2);
-					std::vector<int> usedIndexes;
+					std::vector<Block*> usedIndexes;
 					prevDir->removeFile(prevName, usedIndexes);
 					_freeBlocks.insert(std::end(_freeBlocks), std::begin(usedIndexes), std::end(usedIndexes));
 					output = "File successfully moved.\n";
