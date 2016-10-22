@@ -142,7 +142,7 @@ std::string help() {
     helpStr += "* mkdir  <directory>:               Creates a new directory called <directory>\n";  
     helpStr += "* cd     <directory>:               Changes current working directory to <directory>\n";  
     helpStr += "* pwd:                              Get current working directory\n";  
-	helpStr += "* chmod:							Change <access rights> for <file>\n"; 
+	helpStr += "* chmod:                            Change <access rights> for <file>. 0=r/w, 1=r, 2=w, 0=Nothing\n"; 
     helpStr += "* help:                             Prints this help screen\n";  
     return helpStr;
 }
