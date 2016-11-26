@@ -43,7 +43,7 @@ std::string Directory::toString() const
 {
 	std::string tempName = ".";
 	tempName.replace(0, 1, 24, ' ');
-	int l = int(fminf(float(_name.length()), 24.f));
+	int l = int(fminf(float(_name.length()), 22.f));
 	tempName.replace(0, l, _name.substr(0, l));
 
 	return tempName + std::to_string(_directories.size()) + "\t"
