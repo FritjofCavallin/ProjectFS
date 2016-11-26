@@ -172,6 +172,7 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 			else
 				break;
 		}
+		//Reads and stores file access rights
 		while (1)
 		{
 			fscanf(loadFile, "%c", &read);
@@ -192,6 +193,9 @@ std::string FileSystem::loadFromFile(Directory & directory, FILE* loadFile)
 		fscanf(loadFile, "%c", &read); //reads the line feed after the data
 		writeToFile(&directory, name, data, std::stoi(accessRights));
 		name = "";
+		size = "";
+		accessRights = "";
+		data = "";
 	}
 
 	return "Load successful.\n";
@@ -411,7 +415,7 @@ std::string FileSystem::appendFile(const std::string & path1, const std::string 
 		{
 			if (file->getAccessRights() < 2) //Checks access rights for reading file 1
 			{
-				dir->getFileData(p, data1);
+				dir->getFileData(fileName, data1);
 				p = path2;
 				appendFileName = extractNameFromPath(p);
 				dir = startPathProcessing(p);
@@ -425,7 +429,7 @@ std::string FileSystem::appendFile(const std::string & path1, const std::string 
 							std::vector<Block*> usedIndexes;
 							dir->removeFile(appendFileName, usedIndexes);
 							_freeBlocks.insert(std::end(_freeBlocks), std::begin(usedIndexes), std::end(usedIndexes));
-							data = data1 + data2;
+							data = data2 + data1;
 							writeToFile(dir, appendFileName, data, file->getAccessRights());
 							output = "File successfully appended.\n";
 						}
